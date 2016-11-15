@@ -41,6 +41,11 @@ Teide :
 		canal non fiable
 
 	Algorithme :
+		Phase 1 : Etablissement de la connexion
+		Phase 2 : Boucle d'envoi de messages
+		Phase 3 : Fin de connection ou Timeout
+		
+		==> Une connexion est bidirectionnelle (envoi et reception).
 Overhead du message : - identifiant de la machine + identifiant du message + type de message
 
 	Listes des types de message :
