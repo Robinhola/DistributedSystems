@@ -15,7 +15,7 @@ class Connection(object):
         if arg == "":
             self.start_receiving()
         else:
-            self.IP_address = arg
+            self.ip_address = arg
             self.start_sending()
             
     # unknown behavior
@@ -30,7 +30,7 @@ class Connection(object):
         self.__exit__(self, None, None, None)
 
     def start_sending(self):
-        self.sending_thread = ReceivingThread()
+        self.sending_thread = SendingThread(self.ip_address)
         self.sending_thread.start()
 
     def send(self, message):
@@ -46,7 +46,7 @@ class Connection(object):
 
     def receive(self):
         message = ""
-        try:
+        try
             self.receiving_thread.read(message)
         except AttributeError:
             self.start_receiving()
