@@ -22,29 +22,29 @@ class Connection(object):
     def __exit__(self, exc_type, exc_value, traceback):
         self.package_obj.cleanup()
 
-    def closing_procedure():
+    def closing_procedure(self):
         return
 
-    def close():
+    def close(self):
         self.closing_procedure() 
-        __exit__(self, exc_type, exc_value, traceback)
+        self.__exit__(self, None, None, None)
 
-    def start_sending():
+    def start_sending(self):
         self.sending_thread = ReceivingThread()
         self.sending_thread.start()
 
-    def send(message):
+    def send(self, message):
         try:
             self.sending_thread.add(message)
         except AttributeError:
             self.start_sending()
             self.sending_thread.add(message)
 
-    def start_receiving():
+    def start_receiving(self):
         self.receiving_thread = ReceivingThread()
         self.receiving_thread.start()
 
-    def receive():
+    def receive(self):
         message = ""
         try:
             self.receiving_thread.read(message)
