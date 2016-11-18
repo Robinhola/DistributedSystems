@@ -22,14 +22,14 @@ class Connection(object):
     def __exit__(self, exc_type, exc_value, traceback):
         self.package_obj.cleanup()
 
-    def closing_procedure(self):
+    def __closing_procedure(self):
         return
 
     def close(self):
         self.closing_procedure() 
         self.__exit__(self, None, None, None)
 
-    def start_sending(self):
+    def __start_sending(self):
         self.sending_thread = SendingThread(self.ip_address)
         self.sending_thread.start()
 
@@ -40,7 +40,7 @@ class Connection(object):
             self.start_sending()
             self.sending_thread.add(message)
 
-    def start_receiving(self):
+    def __start_receiving(self):
         self.receiving_thread = ReceivingThread()
         self.receiving_thread.start()
 
