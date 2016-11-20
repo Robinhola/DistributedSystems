@@ -1,5 +1,6 @@
 # encoding: utf-8
 import threading
+from Message import *
 import time
 
 class SendingThread(threading.Thread):
@@ -7,8 +8,10 @@ class SendingThread(threading.Thread):
         super(SendingThread, self).__init__()
         self.target_ip_address = ip_address
         self.connection = connection
+        self.target_buffer_full = False
         self.sending_list = []
         self.ack_array = []
+        self.ack_array_next_free_cell = []
         self.linking_dict = {}
 
     def run(self):
@@ -22,7 +25,8 @@ class SendingThread(threading.Thread):
         self.handle_connection_ending()
 
     def add(self, message):
-        self.add_to_send_list(message)
+        self.wrap_message(message)
+        self.append_to_sending_list(message)
         self.add_to_ack_array(message)
         self.link_message_to_id(message)
     
@@ -44,22 +48,24 @@ class SendingThread(threading.Thread):
         pass
 
     def has_message_to_process():
-        pass
+        return len(sending_list) > 0
 
     def target_buffer_not_full():
-        pass
+        return not self.target_buffer_full
 
     def handle_connection_ending():
         pass
 
-    def add_to_send_list(message):
+    def wrap_message(message):
         pass
         
-    def add_to_ack_array(message):
-        pass
+    def add_to_ack_array(Message message):
+        indice = self.ack_array_next_free_cell.pop()
+        self.ack_array[indice] = False
+        message.set_ack_number(indice)
 
-    def link_message_to_id(message):
-        pass
+    def link_message_to_id(Message message):
+        self.linking_dict[message.get_id()] = message.get_ack_number()
 
     def pop_next_message():
         pass
