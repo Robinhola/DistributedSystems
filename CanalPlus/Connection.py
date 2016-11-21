@@ -52,3 +52,7 @@ class Connection(object):
             self.start_receiving()
             self.receiving_thread.read(message)
         return message
+
+
+def closing_procedure():
+    return
