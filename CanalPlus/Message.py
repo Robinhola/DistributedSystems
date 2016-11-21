@@ -40,7 +40,7 @@ class Message(object):
 		self.ack_status = True
 
 	def time_since_last_try_not_short(self):
-		diff = time.gmtime() - self.time_since_last_try()
+		diff = time.gmtime() - self.time_since_last_try
 		diff = diff * 1000
 		return diff > TIME_BEFORE_SENDING_AGAIN_ms 
 
