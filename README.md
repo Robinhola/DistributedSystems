@@ -46,14 +46,15 @@ Teide :
 		Phase 3 : Fin de connection ou Timeout
 		
 		==> Une connexion est bidirectionnelle (envoi et reception).
-Overhead du message : - identifiant de la machine + identifiant du message + type de message
+Overhead du message : identifiant de la machine + identifiant du message + type de message
 
 	Listes des types de message :
 
 		=> message standard
-		=> Acquittement + taille restante dans la fenetre
-		=> réenvoi
-		=> debut de connexion (bonjour, je suis machin, je commence au message n, réponse : ok, ma taille de fenetre est m).
+		=> acquittement + taille restante dans la fenetre
+		=> réenvoie
+		=> debut de connexion 
+			(bonjour, je suis machin, je commence au message n, réponse : ok, ma taille de fenetre est m).
 
 	Format du message :
 		=> num message, type + [taille fenetre disponible] + payload.
