@@ -1,6 +1,7 @@
 # encoding: utf-8
 import threading
 from Message import *
+from CanalPlusHeader import *
 import time
 
 class SendingThread(threading.Thread):
@@ -23,9 +24,9 @@ class SendingThread(threading.Thread):
         continue
     self.handle_connection_ending()
 
-  def add_data(self, format, data): ######## WIP
+  def add_data(self, message, format, data): ######## WIP
     header = self.create_header(self)
-    formated_data = Message.format_data(format, data)
+    formated_data = message.format_data(format, data)
     message.add_content(header, formated_data)
     message.wrapping()
     self.append_to_sending_list(message)
@@ -80,4 +81,5 @@ class SendingThread(threading.Thread):
     self.ack_array_next_free_cell.append(ack)
     message.delete()
 
-  def __create_header(self): 
+  def __create_header(self):
+    return CanalPlusHeader()
