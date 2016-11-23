@@ -3,6 +3,9 @@ import threading
 from Message import *
 from CanalPlusHeader import *
 import time
+from random import randint 
+
+RANGE 99999
 
 class SendingThread(threading.Thread):
 
@@ -15,6 +18,8 @@ class SendingThread(threading.Thread):
     self.ack_array = []
     self.ack_array_next_free_cell = []
 
+  random_number = 0
+
   def run(self):
     self.start_receiving_acks()
     self.establish_connection()
@@ -25,12 +30,12 @@ class SendingThread(threading.Thread):
         continue
     self.handle_connection_ending()
 
-  def add(self, format, data): ######## WIP
-    message = self.create_message(format, data)
+  def add(self, format, data):
+    message = self.create_message(format, data, self.connection)
     self.append_to_sending_list(message)
     self.add_to_ack_array(message)
             
-  def send_next_message(self):
+  def send_next_message(self): ######## WIP
     message = self.pop_next_message();
     if not message.has_been_read():
       if message.time_since_last_try_not_short():
@@ -84,8 +89,9 @@ class SendingThread(threading.Thread):
     self.id_message(message)
     return message 
 
-  def id_message(self, message): #TODO
-      pass
+  def id_message(self, message):
+    random_number = randint(1, RANGE)
+    message.set_id(random_number)
 
   def create_header(self):
     return CanalPlusHeader()

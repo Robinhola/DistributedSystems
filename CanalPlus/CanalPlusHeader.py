@@ -1,19 +1,26 @@
+from random import randint 
+import hashlib
+
+RANGE 99999
+
 class CanalPlusHeader(object):
   """docstring for CanalPlusHeader"""
-  def __init__(self,                    \
-               source_port = 5005,      \
-               destination_port = 5005, \
-               sequence_number = 1,     \
-               ack_number = -1,         \
-               nb_of_fields = 5,        \
-               flag = 0,                \
-               window_size = 32):
+  def __init__(self,                     \
+                sequence_number = -1,    \
+                ack_number = -1,         \
+                source_port = 5005,      \
+                destination_port = 5005, \
+                nb_of_fields = 5,        \
+                flag = 0,                \
+                window_size = 32):
     super(CanalPlusHeader, self).__init__()
     self.ports = [source_port, destination_port]
     self.numbers = [sequence_number, ack_number]
     self.specifications = [nb_of_fields, flag, window_size]
-    self.checksum = 0
+    self.checksum = b''
   
+  random_number = 0
+
   def turn_into_bytes():
     values = itertools.chain(self.ports, self.numbers, self.specifications)
     results = bytes([])
@@ -22,6 +29,29 @@ class CanalPlusHeader(object):
     PyBytes_FromFormat(results, PyBytes_FromFormat("%d", self.checksum))
     print results
     return results
+
+  def decide_seq_and_ack(self, type, previous_seq, previous_ack):
+    if type == 'data' or type == 'SYN' or type == 'FIN':
+      random_number = randint(RANGE)
+      self.set_sequence_number(random_number)
+    else if type == 'dataACK' or type =='SYNACK' or type == 'FINACK':
+      random_number = randint(RANGE)
+      self.set_sequence_number(random_number)
+      self.set_ack_number(previous_seq + 1)
+    else if type == 'ACK':
+      self.set_sequence_number(previous_ack)
+      self.set_ack_number(previous_seq + 1)
+    else:
+      print "not a valid type"
+      return 0
+    return 1
+
+  def compute_checksum(self, data):
+    m = hashlib.md5()
+    m.update(self.turn_into_bytes())
+    m.update(data)
+    self.checksum = m.digest()
+    print m.digest()
     
   def set_source_port(self, value):
     self.port[0] = value

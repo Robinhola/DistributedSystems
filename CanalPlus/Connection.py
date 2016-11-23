@@ -50,7 +50,11 @@ class Connection(object):
     return self.__source_port
 
   def get_ip_address(self):
-    return self.__ip_address
+    try:
+      return self.__ip_address
+    except AttributeError:
+      print "no ip address"
+      return ""
 
   def __start_sending(self):
     self.__sending_thread = SendingThread(self.ip_address)
