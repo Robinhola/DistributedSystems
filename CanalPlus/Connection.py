@@ -25,9 +25,9 @@ class Connection(object):
   def __exit__(self, exc_type, exc_value, traceback):
     self.package_obj.cleanup()
 
-  def send(self, format, data):
+  def send(self, format = "%s", data):
     try:
-      self.__sending_thread.send(message)
+      self.__sending_thread.add(format, data)
     except AttributeError:
       self.__start_sending()
       self.__sending_thread.add(message)
