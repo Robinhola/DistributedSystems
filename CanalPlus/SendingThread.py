@@ -23,8 +23,10 @@ class SendingThread(threading.Thread):
         continue
     self.handle_connection_ending()
 
-  def add_data(self, format, data):
-    message.add_content(header, formated_data) ######## To do
+  def add_data(self, format, data): ######## WIP
+    header = self.create_header(self)
+    formated_data = Message.format_data(format, data)
+    message.add_content(header, formated_data)
     message.wrapping()
     self.append_to_sending_list(message)
     self.add_to_ack_array(message)
@@ -43,21 +45,21 @@ class SendingThread(threading.Thread):
     self.ack_receiving_thread = ReceivingAckThread(self.ack_queue)
     self.ack_receiving_thread.start()
 
-  def establish_connection():
+  def establish_connection(self):
     print ("Not implemented yet")
     pass
 
-  def has_message_to_process():
+  def has_message_to_process(self):
     return len(sending_list) > 0
 
-  def target_buffer_not_full():
+  def target_buffer_not_full(self):
     return not self.target_buffer_full
 
-  def handle_connection_ending():
+  def handle_connection_ending(self):
     print ("Not implemented yet")
     pass
     
-  def add_to_ack_array(Message message):
+  def add_to_ack_array(self, Message message):
     indice = self.ack_array_next_free_cell.pop()
     self.ack_array[indice] = False
     message.set_ack_number(indice)
@@ -69,13 +71,14 @@ class SendingThread(threading.Thread):
       message.has_been_read()
     return message
 
-  def append_to_sending_list(Message message):
+  def append_to_sending_list(self, Message message):
     self.sending_list.append(message)
 
-  def remove_message(message):
+  def remove_message(self, message):
     ack = message.get_ack_number()
     id_num = message.get_id()
     self.ack_array[ack] = False
     self.ack_array_next_free_cell.append(ack)
     message.delete()
-    pass
+
+  def __create_header(self): 

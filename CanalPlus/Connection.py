@@ -9,10 +9,12 @@ class Connection(object):
     Object can be instanced in receiving or sending mode depending on the
     presence of an argument on creation.
   """
-  def __init__(self, arg = ""):
+  def __init__(self, source_port, destination_port, arg = ""):
     super(Connection, self).__init__()
     self.status = "closed"
-    if arg == "":
+    self.source_port = source_port
+    self.destination_port = destination_port
+    if arg == "":d
       self.start_receiving()
     else:
       self.ip_address = arg
