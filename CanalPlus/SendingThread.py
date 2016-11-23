@@ -36,7 +36,6 @@ class SendingThread(threading.Thread):
             self.append_to_sending_list(message)
         else:
             self.remove_message(message)
-            message.delete()
 
     def start_receiving_acks(self):
         self.ack_receiving_thread = ReceivingAckThread(self.ack_queue)
