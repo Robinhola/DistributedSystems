@@ -1,5 +1,6 @@
 from random import randint 
 import hashlib
+import itertools
 
 RANGE = 99999
 
@@ -21,18 +22,18 @@ class CanalPlusHeader(object):
   
   random_number = 0
 
-  def turn_into_bytes():
+  def turn_into_bytes(self):
     values = itertools.chain(self.ports, self.numbers, self.specifications)
     results = bytes([])
     for val in values:
-      PyBytes_ConcatAndDel(results, PyBytes_FromFormat("%d", val))
-    PyBytes_FromFormat(results, PyBytes_FromFormat("%d", self.checksum))
+      results = results +(bytes(values))
+    results = results + bytes(self.checksum)
     print (results)
     return results
 
   def decide_seq_and_ack(self, type, previous_seq, previous_ack):
     if type == 'data' or type == 'SYN' or type == 'FIN':
-      random_number = randint(RANGE)
+      random_number = randint(1, RANGE)
       self.set_sequence_number(random_number)
     elif type == 'dataACK' or type =='SYNACK' or type == 'FINACK':
       random_number = randint(RANGE)

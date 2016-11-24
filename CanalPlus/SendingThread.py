@@ -38,6 +38,7 @@ class SendingThread(threading.Thread):
     self.add_to_ack_array(message)
             
   def send_next_message(self): ######## WIP
+    print("sending message")
     message = self.pop_next_message();
     received = message.get_ack_status()
     if not received:
@@ -52,17 +53,18 @@ class SendingThread(threading.Thread):
     self.ack_receiving_thread.start()
 
   def establish_connection(self):
-    print ("Not implemented yet")
+    self.connection.is_connected()
+    print ("establish_connection Not really implemented yet")
     pass
 
   def has_message_to_process(self):
-    return len(sending_list) > 0
+    return len(self.sending_list) > 0
 
   def target_buffer_not_full(self):
     return not self.target_buffer_full
 
   def handle_connection_ending(self):
-    print ("Not implemented yet")
+    print ("handle_connection_ending Not implemented yet")
     pass
 
   def add_to_ack_array(self, message):
@@ -100,6 +102,7 @@ class SendingThread(threading.Thread):
     return CanalPlusHeader()
 
   def try_to_send(self, message):
+    message.time_since_last_try = time.gmtime()
     sock = socket.socket(socket.AF_INET, # Internet
                        socket.SOCK_DGRAM) # UDP
     UDP_IP = self.connection.get_ip_address()

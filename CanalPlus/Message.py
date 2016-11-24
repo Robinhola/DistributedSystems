@@ -25,16 +25,12 @@ class Message(object):
     header.compute_checksum(self.content[1])
 
   def format_data(self, format, data):
-    return PyBytes_FromFormat(format, data)
+    return bytes(data)
 
   def time_since_last_try_not_short(self):
     diff = time.gmtime() - self.time_since_last_try
     diff = diff * 1000
     return diff > TIME_BEFORE_SENDING_AGAIN_ms 
-
-  def try_to_send(self):
-    self.time_since_last_try = time.gmtime()
-    print ("Not implemented yet")
 
   def set_id(self, id):
     self.__id = id

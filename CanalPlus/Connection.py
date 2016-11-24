@@ -30,7 +30,7 @@ class Connection(object):
       self.__sending_thread.add(format, data)
     except AttributeError:
       self.__start_sending()
-      self.__sending_thread.add(message)
+      self.__sending_thread.add(format, data)
 
   def receive(self):
     try:
@@ -42,6 +42,9 @@ class Connection(object):
   def close(self):
     self.__closing_procedure() 
     self.__exit__(self, None, None, None)
+
+  def is_connected(self):
+    self.__status = "established"
 
   def get_destination_port(self):
     return self.__destination_port
