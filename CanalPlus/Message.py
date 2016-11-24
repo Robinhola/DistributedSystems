@@ -24,7 +24,7 @@ class Message(object):
     header.decide_seq_and_ack(type, seq, ack)
     header.compute_checksum(self.content[1])
 
-  def format_data(format, data):
+  def format_data(self, format, data):
     return PyBytes_FromFormat(format, data)
 
   def time_since_last_try_not_short(self):

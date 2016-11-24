@@ -6,7 +6,7 @@ import time
 from random import randint 
 import socket
 
-RANGE 99999
+RANGE = 99999
 
 
 class SendingThread(threading.Thread):
@@ -23,9 +23,9 @@ class SendingThread(threading.Thread):
   random_number = 0
 
   def run(self):
-    self.start_receiving_acks()
+    #self.start_receiving_acks()
     self.establish_connection()
-    while self.connection.status == "established":
+    while self.connection.get_status() == "established":
       if self.has_message_to_process() and self.target_buffer_not_full():
         self.send_next_message()
       else:
@@ -33,7 +33,7 @@ class SendingThread(threading.Thread):
     self.handle_connection_ending()
 
   def add(self, format, data):
-    message = self.create_message(format, data, self.connection)
+    message = self.create_message(format, data)
     self.append_to_sending_list(message)
     self.add_to_ack_array(message)
             
@@ -65,19 +65,19 @@ class SendingThread(threading.Thread):
     print ("Not implemented yet")
     pass
 
-  def add_to_ack_array(self, Message message):
+  def add_to_ack_array(self, message):
     indice = self.ack_array_next_free_cell.pop()
     self.ack_array[indice] = False
     message.set_ack_number(indice)
 
   def pop_next_message(self):
-    Message message = self.sending_list.pop()
-    int ack = message.get_ack_number()
+    message = self.sending_list.pop()
+    ack = message.get_ack_number()
     if self.ack_array[ack]:
       message.has_been_read()
     return message
 
-  def append_to_sending_list(self, Message message):
+  def append_to_sending_list(self, message):
     self.sending_list.append(message)
 
   def remove_message(self, message):
@@ -99,10 +99,10 @@ class SendingThread(threading.Thread):
   def create_header(self):
     return CanalPlusHeader()
 
-  def try_to_send(self, Message message):
+  def try_to_send(self, message):
     sock = socket.socket(socket.AF_INET, # Internet
                        socket.SOCK_DGRAM) # UDP
     UDP_IP = self.connection.get_ip_address()
     UDP_PORT = self.connection.get_destination_port()
-    print message.content
+    print (message.content)
     sock.sendto(message.content, (UDP_IP, UDP_PORT))

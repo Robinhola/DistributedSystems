@@ -25,7 +25,7 @@ class Connection(object):
   def __exit__(self, exc_type, exc_value, traceback):
     self.package_obj.cleanup()
 
-  def send(self, format = "%s", data):
+  def send(self, format, data):
     try:
       self.__sending_thread.add(format, data)
     except AttributeError:
@@ -33,7 +33,7 @@ class Connection(object):
       self.__sending_thread.add(message)
 
   def receive(self):
-    try
+    try:
       return self.__receiving_thread.read()
     except AttributeError:
       self.__start_receiving()
@@ -53,11 +53,14 @@ class Connection(object):
     try:
       return self.__ip_address
     except AttributeError:
-      print "no ip address"
+      print ("no ip address")
       return ""
 
+  def get_status(self):
+    return self.__status
+
   def __start_sending(self):
-    self.__sending_thread = SendingThread(self.ip_address)
+    self.__sending_thread = SendingThread(self, self.__ip_address)
     self.__sending_thread.start()
 
   def __start_receiving(self):

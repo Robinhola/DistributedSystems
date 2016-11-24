@@ -1,7 +1,7 @@
 from random import randint 
 import hashlib
 
-RANGE 99999
+RANGE = 99999
 
 class CanalPlusHeader(object):
   """docstring for CanalPlusHeader"""
@@ -27,22 +27,22 @@ class CanalPlusHeader(object):
     for val in values:
       PyBytes_ConcatAndDel(results, PyBytes_FromFormat("%d", val))
     PyBytes_FromFormat(results, PyBytes_FromFormat("%d", self.checksum))
-    print results
+    print (results)
     return results
 
   def decide_seq_and_ack(self, type, previous_seq, previous_ack):
     if type == 'data' or type == 'SYN' or type == 'FIN':
       random_number = randint(RANGE)
       self.set_sequence_number(random_number)
-    else if type == 'dataACK' or type =='SYNACK' or type == 'FINACK':
+    elif type == 'dataACK' or type =='SYNACK' or type == 'FINACK':
       random_number = randint(RANGE)
       self.set_sequence_number(random_number)
       self.set_ack_number(previous_seq + 1)
-    else if type == 'ACK':
+    elif type == 'ACK':
       self.set_sequence_number(previous_ack)
       self.set_ack_number(previous_seq + 1)
     else:
-      print "not a valid type"
+      print ("not a valid type")
       return 0
     return 1
 
@@ -51,7 +51,7 @@ class CanalPlusHeader(object):
     m.update(self.turn_into_bytes())
     m.update(data)
     self.checksum = m.digest()
-    print m.digest()
+    print (m.digest())
     
   def set_source_port(self, value):
     self.port[0] = value
