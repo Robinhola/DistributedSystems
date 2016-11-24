@@ -54,7 +54,7 @@ class SendingThread(threading.Thread):
 
   def establish_connection(self):
     self.connection.is_connected()
-    print ("establish_connection Not really implemented yet")
+    print ("establish_connection Not really implemented yet"),
     pass
 
   def has_message_to_process(self):
@@ -68,13 +68,18 @@ class SendingThread(threading.Thread):
     pass
 
   def add_to_ack_array(self, message):
-    indice = self.ack_array_next_free_cell.pop()
-    self.ack_array[indice] = False
+    try:
+      indice = self.ack_array_next_free_cell.pop()
+      self.ack_array[indice] = False
+    except Exception:
+      self.ack_array.append(False)
+      indice = len(self.ack_array) - 1
     message.set_ack_number(indice)
 
   def pop_next_message(self):
     message = self.sending_list.pop()
     ack = message.get_ack_number()
+    print "ACK NUMBER", ack
     if self.ack_array[ack]:
       message.has_been_read()
     return message
@@ -102,10 +107,9 @@ class SendingThread(threading.Thread):
     return CanalPlusHeader()
 
   def try_to_send(self, message):
-    message.time_since_last_try = time.gmtime()
+    message.time_since_last_try = time.time()
     sock = socket.socket(socket.AF_INET, # Internet
                        socket.SOCK_DGRAM) # UDP
     UDP_IP = self.connection.get_ip_address()
     UDP_PORT = self.connection.get_destination_port()
-    print (message.content)
-    sock.sendto(message.content, (UDP_IP, UDP_PORT))
+    sock.sendto(str(message.content), (UDP_IP, UDP_PORT)) # NEED TO SEND BYTES

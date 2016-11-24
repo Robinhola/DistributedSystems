@@ -14,6 +14,7 @@ class Message(object):
     self.__ack_status = False
     self.time_since_last_try = 0
     self.content = [CanalPlusHeader(), self.format_data(format, data)]
+    print self.content
     self.wrapping(connection, type, seq, ack)
 
   def wrapping(self, connection, type, seq, ack):
@@ -28,7 +29,7 @@ class Message(object):
     return bytes(data)
 
   def time_since_last_try_not_short(self):
-    diff = time.gmtime() - self.time_since_last_try
+    diff = time.time() - self.time_since_last_try
     diff = diff * 1000
     return diff > TIME_BEFORE_SENDING_AGAIN_ms 
 

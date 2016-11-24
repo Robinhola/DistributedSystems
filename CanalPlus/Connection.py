@@ -56,7 +56,7 @@ class Connection(object):
     try:
       return self.__ip_address
     except AttributeError:
-      print ("no ip address")
+      print ("no ip address"),
       return ""
 
   def get_status(self):
