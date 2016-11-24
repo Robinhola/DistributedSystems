@@ -4,8 +4,10 @@ from Message import *
 from CanalPlusHeader import *
 import time
 from random import randint 
+import socket
 
 RANGE 99999
+
 
 class SendingThread(threading.Thread):
 
@@ -37,9 +39,10 @@ class SendingThread(threading.Thread):
             
   def send_next_message(self): ######## WIP
     message = self.pop_next_message();
-    if not message.has_been_read():
+    received = message.get_ack_status()
+    if not received:
       if message.time_since_last_try_not_short():
-        message.try_to_send()
+        self.try_to_send(message)
       self.append_to_sending_list(message)
     else:
       self.remove_message(message)
@@ -95,3 +98,11 @@ class SendingThread(threading.Thread):
 
   def create_header(self):
     return CanalPlusHeader()
+
+  def try_to_send(self, Message message):
+    sock = socket.socket(socket.AF_INET, # Internet
+                       socket.SOCK_DGRAM) # UDP
+    UDP_IP = self.connection.get_ip_address()
+    UDP_PORT = self.connection.get_destination_port()
+    print message.content
+    sock.sendto(message.content, (UDP_IP, UDP_PORT))
