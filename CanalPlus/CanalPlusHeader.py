@@ -31,7 +31,7 @@ class CanalPlusHeader(object):
     print (results)
     return results
 
-  def decide_seq_and_ack(self, type, previous_seq, previous_ack):
+  def decide_seq_and_ack(self, type, previous_seq = 0, previous_ack = 0):
     if type == 'data' or type == 'SYN' or type == 'FIN':
       random_number = randint(1, RANGE)
       self.set_sequence_number(random_number)
