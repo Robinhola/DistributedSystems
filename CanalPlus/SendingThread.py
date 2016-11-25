@@ -16,18 +16,24 @@ class SendingThread(threading.Thread):
     self.target_ip_address = ip_address
     self.connection = connection
     self.target_buffer_full = False
+    self.ack_sending_tuples = [] # list of ack tuples (seq, ack) 
     self.sending_list = []
     self.ack_array = []
     self.ack_array_next_free_cell = []
+    self.sock = socket.socket(socket.AF_INET, # Internet
+                       socket.SOCK_DGRAM) # UDP
 
   random_number = 0
 
   def run(self):
-    #self.start_receiving_acks()
     self.establish_connection()
     while self.connection.get_status() == "established":
-      if self.has_message_to_process() and self.target_buffer_not_full():
-        self.send_next_message()
+      if self.target_buffer_not_full():
+        if has_ack_to_process():
+          for seq, ack in self.ack_sending_tuples:
+            self.send_ack(seq, ack)
+        if self.has_message_to_process():
+          self.send_next_message()
       else:
         continue
     self.handle_connection_ending()
@@ -37,7 +43,7 @@ class SendingThread(threading.Thread):
     self.append_to_sending_list(message)
     self.add_to_ack_array(message)
             
-  def send_next_message(self): ######## WIP
+  def send_next_message(self):
     print("sending message")
     message = self.pop_next_message();
     received = message.get_ack_status()
@@ -53,12 +59,15 @@ class SendingThread(threading.Thread):
     self.ack_receiving_thread.start()
 
   def establish_connection(self):
-    self.connection.is_connected()
+    self.connection.connected()
     print ("establish_connection Not really implemented yet"),
     pass
 
   def has_message_to_process(self):
     return len(self.sending_list) > 0
+
+  def has_ack_to_process(self):
+    return len(self.ack_sending_tuples) > 0
 
   def target_buffer_not_full(self):
     return not self.target_buffer_full
@@ -97,7 +106,7 @@ class SendingThread(threading.Thread):
   def create_message(self, format, data):
     message = Message(format, data)
     self.id_message(message)
-    return message 
+    return message
 
   def id_message(self, message):
     random_number = randint(1, RANGE)
@@ -106,10 +115,14 @@ class SendingThread(threading.Thread):
   def create_header(self):
     return CanalPlusHeader()
 
-  def try_to_send(self, message):
-    message.time_since_last_try = time.time()
-    sock = socket.socket(socket.AF_INET, # Internet
-                       socket.SOCK_DGRAM) # UDP
+  def send_ack(self, seq, ack):
+    message = Message("", "", "ACK", ack, seq + 1, self.connection)
     UDP_IP = self.connection.get_ip_address()
     UDP_PORT = self.connection.get_destination_port()
-    sock.sendto(str(message.content), (UDP_IP, UDP_PORT)) # NEED TO SEND BYTES
+    self.sock.sendto(str(message.content), (UDP_IP, UDP_PORT)) # NEED TO SEND BYTES
+
+  def try_to_send(self, message):
+    message.time_since_last_try = time.time()
+    UDP_IP = self.connection.get_ip_address()
+    UDP_PORT = self.connection.get_destination_port()
+    self.sock.sendto(str(message.content), (UDP_IP, UDP_PORT)) # NEED TO SEND BYTES
