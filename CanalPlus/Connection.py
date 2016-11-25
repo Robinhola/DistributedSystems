@@ -70,5 +70,27 @@ class Connection(object):
     self.__receiving_thread = ReceivingThread()
     self.__receiving_thread.start()
 
+
+  def __opening_procedure(self):
+    pass
+
   def __closing_procedure(self):
     pass
+
+  def __send_SYN(self):
+    pass
+
+  def __send_FIN(self):
+    pass
+
+  def __send_ACK(self):
+    pass
+
+  def __send_dataACK(self):
+    pass
+
+  def __send_SYNACK(self):
+    pass
+
+  def __send_FINACK(self):
+    pass  
