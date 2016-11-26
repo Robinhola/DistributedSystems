@@ -15,6 +15,7 @@ class Connection(object):
     self.__status = "closed"
     self.__source_port = source_port
     self.__destination_port = destination_port
+    self.__dict_seq_ack = {}
     if ip_address == "":
       self.__start_receiving()
     else:
@@ -25,7 +26,7 @@ class Connection(object):
   def __exit__(self, exc_type, exc_value, traceback):
     self.package_obj.cleanup()
 
-  def send(self, format, data):
+  def send(self, format, data): # C style format
     try:
       self.__sending_thread.add(format, data)
     except AttributeError:
@@ -43,7 +44,7 @@ class Connection(object):
     self.__closing_procedure() 
     self.__exit__(self, None, None, None)
 
-  def is_connected(self):
+  def connected(self):
     self.__status = "established"
 
   def get_destination_port(self):
@@ -70,12 +71,17 @@ class Connection(object):
     self.__receiving_thread = ReceivingThread()
     self.__receiving_thread.start()
 
-
   def __opening_procedure(self):
-    pass
+    while (self.__status == "SYN"):
+      self.__send_SYN()
+    while (self.__status == "ACK"):
+      self.__send_ACK()
 
   def __closing_procedure(self):
-    pass
+    while (self.__status == "FIN"):
+      self.__send_FIN()
+    while (self.__status == "ACK"):
+      self.__send_ACK()
 
   def __send_SYN(self):
     pass

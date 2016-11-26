@@ -2,7 +2,7 @@
 import time
 from CanalPlusHeader import *
 
-TIME_BEFORE_SENDING_AGAIN_ms = 150 #ms
+TIME_BEFORE_SENDING_AGAIN_ms = 1500 #ms
 
 class Message(object):
   """docstring for Message"""
@@ -17,7 +17,7 @@ class Message(object):
     print self.content
     self.wrapping(connection, type, seq, ack)
 
-  def wrapping(self, connection, type, seq, ack):
+  def wrapping(self, type, seq, ack, connection):
     header = self.content[0]
     if (connection != None):
       header.set_source_port(connection.get_source_port())
@@ -50,3 +50,6 @@ class Message(object):
 
   def get_ack_status(self):
     return self.__ack_status
+    
+  def get_header(self):
+    return self.content[0]
