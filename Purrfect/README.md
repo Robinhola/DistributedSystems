@@ -12,7 +12,7 @@ Purrfect will try to connect back to the faulty machine to detect when it is bac
 
 ## Usage
 
-./purrfect [TCP|C+] target_IP:PORT frequencyofpings timeout
+./purrfect [TCP|C+] target_IP frequencyofpings timeout
 
 frequencyofpings is in milliseconds as well as timeout.
 
