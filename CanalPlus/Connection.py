@@ -15,7 +15,8 @@ class Connection(object):
     self.__status = "closed"
     self.__source_port = source_port
     self.__destination_port = destination_port
-    self.__dict_seq_ack = {}
+    self.__dict_seq_index = {}
+    self.ack_array = []
     if ip_address == "":
       self.__start_receiving()
     else:

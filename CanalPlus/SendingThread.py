@@ -18,7 +18,6 @@ class SendingThread(threading.Thread):
     self.target_buffer_full = False
     self.ack_sending_tuples = [] # list of ack tuples (seq, ack) 
     self.sending_list = []
-    self.ack_array = []
     self.ack_array_next_free_cell = []
     self.sock = socket.socket(socket.AF_INET, # Internet
                        socket.SOCK_DGRAM) # UDP
@@ -79,17 +78,19 @@ class SendingThread(threading.Thread):
   def add_to_ack_array(self, message):
     try:
       indice = self.ack_array_next_free_cell.pop()
-      self.ack_array[indice] = False
+      self.connection.ack_array[indice] = False
     except Exception:
-      self.ack_array.append(False)
-      indice = len(self.ack_array) - 1
+      self.connection.ack_array.append(False)
+      indice = len(self.connection.ack_array) - 1
     message.set_ack_number(indice)
+    seq = message.get_header().get_sequence_number()
+    connection.__dict_seq_index[seq] = indice
 
   def pop_next_message(self):
     message = self.sending_list.pop()
     ack = message.get_ack_number()
     print "ACK NUMBER", ack
-    if self.ack_array[ack]:
+    if self.connection.ack_array[ack]:
       message.has_been_read()
     return message
 
@@ -99,7 +100,7 @@ class SendingThread(threading.Thread):
   def remove_message(self, message):
     ack = message.get_ack_number()
     id_num = message.get_id()
-    self.ack_array[ack] = False
+    self.connection.ack_array[ack] = False
     self.ack_array_next_free_cell.append(ack)
     message.delete()
 
