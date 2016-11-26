@@ -5,7 +5,7 @@ Purrfect is a perfect fault detector, using a reliable communication channel, it
 Purrfect uses the following hypothesis:
   - It needs to run on top of a reliable communication channel.
   
-## Functionning
+## Functioning
 
 Purrfect uses TCP or CanalPlus to "ping" a distant machine. If the specified timeout is reached, then Purrfect declares the distant machine faulty.
 Purrfect will try to connect back to the faulty machine to detect when it is back online.
