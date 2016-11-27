@@ -7,10 +7,13 @@ def __init__(self, connection ,buffer_size = 35):
       while True:
         self.receive()
         for message in self.receiving_buffer:
-          if (self.has_ack_number(message) and self.demands_ack(message)):
-            self.send_corresponding_ack(message)
+          if self.message_needs_ack(message):
+            self.send_ack(message)
+            self.add_message_to_set(message)
           else:
-            self.send_new_ack(message)
+            seq = self.validate_ack(message)
+            data = self.pop_message_from_set(seq)
+            self.treat_data(data)
 
     def send_signal_buffer_full(self):
       pass
@@ -18,15 +21,22 @@ def __init__(self, connection ,buffer_size = 35):
     def receive(self):
       socket.recvfrom_into(self.receiving_buffer)
 
-    def has_ack_number(self, message):
+    def message_needs_ack(self, message):
+      pass
+      
+    def send_ack(self, message):
+      pass
+      
+    def add_message_to_set(self, message):
       pass
 
-    def demands_ack(self, message):
+    def validate_ack(self, message):
       pass
 
-    def send_corresponding_ack(self, message):
-      pass
-
-    def send_new_ack(self, message):
+    def pop_message_from_set(self, seq):
+      data = ''
+      return data
+      
+    def treat_data(self, data):
       pass
 
