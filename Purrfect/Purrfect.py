@@ -2,6 +2,10 @@
 
 import sys
 import socket
+import time
+
+# cat in 1337 speak is c47, c47 to decimal is 3147
+PORT=3147
 
 class Purrfect(object):
   def __init__(self):
@@ -50,6 +54,26 @@ class Purrfect(object):
       print "Pingperiod / timeout must be unsigned integers"
       sys.exit(-1)
 
+  def detect(self):
+    if self.protocol == "TCP":
+      self.detect_TCP()
+    elif self.protocol == "C+":
+      self.detect_CPlus()
+    else:
+      raise ValueError("Protocol should be TCP or C+")
+
+  def detect_TCP(self):
+    self.establish_connection()
+    self.create_purrfect_detector_thread()
+    self.run_purrfect_dector_thread()
+    while True:
+      time.sleep(1)
+
+
+  def detect_CPlus(self):
+    raise NotImplementedError("Purrfect over CanalPlus is not quite ready")
+
+
 
 
 
@@ -57,3 +81,4 @@ class Purrfect(object):
 
 cat = Purrfect()
 cat.parse_args()
+cat.detect()
