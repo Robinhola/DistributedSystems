@@ -1,34 +1,40 @@
 from random import randint 
-import hashlib
 import itertools
 
-RANGE = 99999
+RANGE = 4294967295
 
 class CanalPlusHeader(object):
-  """docstring for CanalPlusHeader"""
+  
+  FLAGS = {'ACK':     0, 
+          'SYN':      1, 
+          'data':     2,
+          'FIN':      3,
+          'SYNACK':  11,
+          'dataACK': 12,
+          'FINACK':  13}
+
   def __init__(self,
-                sequence_number = 0,
-                ack_number = 0,
-                source_port = 5005,
-                destination_port = 5005,
-                flag = 0,
-                window_size = 32):
+              flag = 'ACK',
+              sequence_number = 0,
+              ack_number = 0,
+              source_port = 5005,
+              destination_port = 5005,
+              window_size = 32):
     super(CanalPlusHeader, self).__init__()
     self.ports = [source_port, destination_port]
     self.numbers = [sequence_number, ack_number]
-    self.specifications = [flag, window_size]
-    self.checksum = b''
+    self.specifications = [CanalPlusHeader.FLAGS[flag], window_size]
   
   random_number = 0
 
   def turn_into_bytes(self):
     b = bytes()
     results = [self.get_source_port().to_bytes(16,'big'),
-               self.get_destination_port().to_bytes(16,'big'),
-               self.get_sequence_number().to_bytes(32,'big'),
-               self.get_ack_number().to_bytes(32,'big'),
-               self.get_flag().to_bytes(16, 'big'),
-               self.get_window_size().to_bytes(16,'big')]
+              self.get_destination_port().to_bytes(16,'big'),
+              self.get_sequence_number().to_bytes(32,'big'),
+              self.get_ack_number().to_bytes(32,'big'),
+              self.get_flag().to_bytes(16, 'big'),
+              self.get_window_size().to_bytes(16,'big')]
     for res in results:
       b += res
     return b
@@ -42,13 +48,10 @@ class CanalPlusHeader(object):
     self.numbers = [int.from_bytes(bheader[32:64],'big'),
                     int.from_bytes(bheader[64:96],'big')]
     self.specifications = [int.from_bytes(bheader[96:112],'big'),
-                           int.from_bytes(bheader[112:128],'big')]
+                          int.from_bytes(bheader[112:128],'big')]
 
   def decide_seq_and_ack(self, type, previous_seq = 0, previous_ack = 0):
-    if type == 'data' or type == 'SYN' or type == 'FIN':
-      random_number = randint(1, RANGE)
-      self.set_sequence_number(random_number)
-    elif type == 'dataACK' or type =='SYNACK' or type == 'FINACK':
+    if type == 'dataACK' or type =='SYNACK' or type == 'FINACK':
       random_number = randint(RANGE)
       self.set_sequence_number(random_number)
       self.set_ack_number(previous_seq + 1)
@@ -60,13 +63,6 @@ class CanalPlusHeader(object):
       return 0
     return 1
 
-  def compute_checksum(self, data):
-    m = hashlib.md5()
-    m.update(self.turn_into_bytes())
-    m.update(data)
-    self.checksum = m.digest()
-    print (m.digest())
-    
   def set_source_port(self, value):
     self.port[0] = value
   
@@ -78,9 +74,6 @@ class CanalPlusHeader(object):
   
   def set_ack_number(self, value):
     self.numbers[1] = value
-  
-  def set_flag(self, value):
-    self.specifications[0] = value
   
   def set_window_size(self, value):
     self.specifications[1] = value

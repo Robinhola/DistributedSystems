@@ -1,7 +1,5 @@
 # encoding: utf-8
-import sys
 from SendingThread import *
-import time
 from random import randint
 
 
@@ -28,10 +26,10 @@ class Connection(object):
     self.package_obj.cleanup()
 
   def send(self, format, data):
-  """
-     C style format: %s, %d and %b supported
-     data should be iterable
-  """
+    """
+    C style format: %s, %d and %b supported
+    data should be iterable
+    """
     try:
       self.__sending_thread.add(format, data)
     except AttributeError:
@@ -77,10 +75,8 @@ class Connection(object):
     self.__receiving_thread.start()
 
   def __opening_procedure(self):
-    while (self.__status == "SYN"):
+    while (self.__status == "WAITING_ACKSYN"):
       self.__send_SYN()
-    while (self.__status == "ACK"):
-      self.__send_ACK()
 
   def __closing_procedure(self):
     while (self.__status == "FIN"):
@@ -105,3 +101,5 @@ class Connection(object):
 
   def __send_FINACK(self):
     pass  
+
+  def send_ack(self, ack_type = "", seq, ack):

@@ -64,3 +64,8 @@ print(header.ports[0])
 print(header.specifications[1])
 
 print(bytes('lol', 'utf-8'))
+
+a = 4294967295
+print(pow(2,32))
+print(a)
+print(a.bit_length())

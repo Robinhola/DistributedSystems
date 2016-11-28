@@ -1,9 +1,12 @@
+import threading
+
+
 class ReceivingThread(threading.Thread):
-def __init__(self, connection ,buffer_size = 35):
-        super(ReceivingThread, self).__init__()
-        self.connection = connection
-        self.receiving_buffer = queue()
-        self.messages_to_ack = {}
+  def __init__(self, connection ,buffer_size = 35):
+    super(ReceivingThread, self).__init__()
+    self.connection = connection
+    self.receiving_buffer = queue()
+    self.messages_to_ack = {}
         
     def run(self):
       while True:
@@ -55,4 +58,3 @@ def __init__(self, connection ,buffer_size = 35):
 
     def treat_data(self, data):
       pass
-

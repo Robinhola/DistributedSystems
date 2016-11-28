@@ -1,5 +1,4 @@
 # encoding: utf-8
-import time
 from CanalPlusHeader import *
 
 TIME_BEFORE_SENDING_AGAIN_ms = 1500 #ms
@@ -13,7 +12,7 @@ class Message(object):
     self.__ack_number = -1
     self.__ack_status = False
     self.time_since_last_try = 0
-    self.header = CanalPlusHeader()
+    self.header = CanalPlusHeader(type)
     self.content = ['', self.format_data(format, data)]
     print (self.content)
     self.wrapping(connection, type, seq, ack)
@@ -22,11 +21,7 @@ class Message(object):
     if (connection != None):
       self.header.set_source_port(connection.get_source_port())
       self.header.set_destination_port(connection.get_destination_port())
-    self.header.decide_seq_and_ack(type, seq, ack)
-    self.header.compute_checksum(self.content[1])
     self.content[0] = self.header.turn_into_bytes()
-
-  def create_from_bytes
 
   def format_data(self, format, data):
     b = bytes()
@@ -38,13 +33,13 @@ class Message(object):
     elif(format == '%d'):
         for d in data:
           b += d.to_bytes(64, 'big')
-    elif(format == '%b')
+    elif(format == '%b'):
         for d in data:
           b += d
-    else:
+    elif(format != ''): # used for acks
       print('ERROR wrong format')
     return b
-    
+
   def time_since_last_try_not_short(self):
     diff = time.time() - self.time_since_last_try
     diff = diff * 1000

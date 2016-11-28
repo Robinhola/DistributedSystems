@@ -2,11 +2,10 @@
 import threading
 from Message import *
 from CanalPlusHeader import *
-import time
 from random import randint 
 import socket
 
-RANGE = 99999
+RANGE = 4294967295
 
 
 class SendingThread(threading.Thread):
@@ -18,6 +17,7 @@ class SendingThread(threading.Thread):
     self.target_buffer_full = False
     self.ack_sending_tuples = [] # list of ack tuples (seq, ack) 
     self.sending_list = []
+    self.ack_sending_list = []
     self.ack_array_next_free_cell = []
     self.sock = socket.socket(socket.AF_INET, # Internet
                        socket.SOCK_DGRAM) # UDP
@@ -25,22 +25,24 @@ class SendingThread(threading.Thread):
   random_number = 0
 
   def run(self):
-    self.establish_connection()
+    self.connection.connected()
     while self.connection.get_status() == "established":
       if self.target_buffer_not_full():
         if has_ack_to_process():
-          for seq, ack in self.ack_sending_tuples:
-            self.send_ack(seq, ack)
+          self.send_next_ack()
         if self.has_message_to_process():
           self.send_next_message()
       else:
-        continue
-    self.handle_connection_ending()
+        time.sleep(.300)
 
   def add(self, format, data):
     message = self.create_message(format, data)
     self.append_to_sending_list(message)
     self.add_to_ack_array(message)
+
+  def add_ack(self, type, seq = 0, ack = 0):
+    ack_msg = create_ack(self, type, seq = 0, ack = 0):
+    self.append_to_ack_list(ack_msg)
             
   def send_next_message(self):
     print("sending message")
@@ -53,27 +55,13 @@ class SendingThread(threading.Thread):
     else:
       self.remove_message(message)
 
-  def start_receiving_acks(self):
-    self.ack_receiving_thread = ReceivingAckThread(self.ack_queue)
-    self.ack_receiving_thread.start()
-
-  def establish_connection(self):
-    self.connection.connected()
-    print ("establish_connection Not really implemented yet"),
-    pass
-
-  def has_message_to_process(self):
-    return len(self.sending_list) > 0
-
-  def has_ack_to_process(self):
-    return len(self.ack_sending_tuples) > 0
-
-  def target_buffer_not_full(self):
-    return not self.target_buffer_full
-
-  def handle_connection_ending(self):
-    print ("handle_connection_ending Not implemented yet")
-    pass
+  def send_next_ack(self):
+    print("sending ack")
+    ack_msg = self.pop_next_ack();
+    if message.time_since_last_try_not_short():
+      self.try_to_send(ack_msg)
+    else:
+      self.append_to_ack_list(ack_msg)
 
   def add_to_ack_array(self, message):
     try:
@@ -85,6 +73,12 @@ class SendingThread(threading.Thread):
     message.set_ack_number(indice)
     seq = message.get_header().get_sequence_number()
     connection.__dict_seq_index[seq] = indice
+
+  def create_message(self, format, data, type = 'data'):
+    random_number = randint(1, RANGE)
+    message = Message(format, data, type, random_number)
+    message.set_id(random_number)
+    return message
 
   def pop_next_message(self):
     message = self.sending_list.pop()
@@ -104,20 +98,28 @@ class SendingThread(threading.Thread):
     self.ack_array_next_free_cell.append(ack)
     message.delete()
 
-  def create_message(self, format, data):
-    message = Message(format, data)
-    self.id_message(message)
-    return message
+  def create_ack(self, type = 'ACK', seq = 0, ack = 0):
+    ack_msg = Message('', '', type)
+    ack_msg.get_header().decide_seq_and_ack(type, seq, ack)
+    return ack_msg
 
-  def id_message(self, message):
-    random_number = randint(1, RANGE)
-    message.set_id(random_number)
+  def pop_next_ack(self):
+    ack_msg = self.ack_sending_list.pop()
+    return ack_msg
 
-  def create_header(self):
-    return CanalPlusHeader()
+  def append_to_ack_list(self, ack_msg):
+    self.ack_sending_list.append(ack_msg)
 
   def try_to_send(self, message):
-    message.time_since_last_try = time.time()
+    content = bytes()
     UDP_IP = self.connection.get_ip_address()
     UDP_PORT = self.connection.get_destination_port()
-    self.sock.sendto(str(message.content), (UDP_IP, UDP_PORT)) # NEED TO SEND BYTES
+    content += message.content[0] + message.content[1]
+    message.time_since_last_try = time.time()
+    self.sock.sendto(content, (UDP_IP, UDP_PORT))
+
+  def has_message_to_process(self):
+    return len(self.sending_list) > 0
+
+  def has_ack_to_process(self):
+    return len(self.ack_sending_list) > 0
