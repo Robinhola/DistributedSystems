@@ -1,5 +1,5 @@
 # encoding: utf-8
-import Connection
+#import Connection
 import itertools
 
 UDP_IP = "127.0.0.1"
@@ -33,18 +33,34 @@ print(results)
 
 
 
-val = [0,1,2,3,4,5,65,7,8,9]
+val = [0,155,2,3,4,5,65,7,8,9]
 print(val)
 
-results = [val[0].to_bytes(16,'big'),
-          val[1].to_bytes(16,'big'),
-          val[5].to_bytes(32,'big'),
-          val[2].to_bytes(32,'big'),
-          val[3].to_bytes(16,'big'),
-          val[4].to_bytes(16,'big')]
+results = [val[1].to_bytes(16,'big')]
+# ,
+#           val[1].to_bytes(16,'big'),
+#           val[5].to_bytes(32,'big'),
+#           val[2].to_bytes(32,'big'),
+#           val[3].to_bytes(16,'big'),
+#           val[4].to_bytes(16,'big')]
 s = ''
 for res in results:
   s = s + str(res)
-s = s.replace('b','').replace("'", '')
-print(s)
+# s = s.replace('b','').replace("'", '')
+
 #    self.connection.__dict_seq_ack[message.get_header().get_sequence_number()] = message.get_header().get_ack_number()
+
+
+print('TEST')
+
+from CanalPlusHeader import *
+header = CanalPlusHeader()
+print(header.ports[0])
+print(header.specifications[1])
+byt = header.turn_into_bytes()
+print(byt)
+header.turn_bytes_to_header(byt)
+print(header.ports[0])
+print(header.specifications[1])
+
+print(bytes('lol', 'u'))

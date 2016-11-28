@@ -26,18 +26,25 @@ class Message(object):
     self.header.compute_checksum(self.content[1])
     self.content[0] = self.header.turn_into_bytes()
 
-  def format_data(self, format, data):
-    s = ''
-    if(not hasattr(data, '__iter__')):
-      data = [data]
-    for d in data:
-      if(format == '%s'):
-        s += d.encoding('utf-8')
-      elif(format == '%d'):
-        s += d.to_bytes(d.bit_length(), 'big').replace('b','').replace("'", '')
-    return s
+  def create_from_bytes
 
-    return
+  def format_data(self, format, data):
+    b = bytes()
+    if(not hasattr(data, '__iter__')):
+        data = [data]
+    if(format == '%s'):
+      for d in data:
+        b = bytes(data, 'utf-8')
+    elif(format == '%d'):
+        for d in data:
+          b += d.to_bytes(64, 'big')
+    elif(format == '%b')
+        for d in data:
+          b += d
+    else:
+      print('ERROR wrong format')
+    return b
+    
   def time_since_last_try_not_short(self):
     diff = time.time() - self.time_since_last_try
     diff = diff * 1000

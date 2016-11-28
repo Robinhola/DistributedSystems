@@ -11,29 +11,38 @@ class CanalPlusHeader(object):
                 ack_number = 0,
                 source_port = 5005,
                 destination_port = 5005,
-                nb_of_fields = 0,
                 flag = 0,
                 window_size = 32):
     super(CanalPlusHeader, self).__init__()
     self.ports = [source_port, destination_port]
     self.numbers = [sequence_number, ack_number]
-    self.specifications = [nb_of_fields, flag, window_size]
+    self.specifications = [flag, window_size]
     self.checksum = b''
   
   random_number = 0
 
   def turn_into_bytes(self):
+    b = bytes()
     results = [self.get_source_port().to_bytes(16,'big'),
                self.get_destination_port().to_bytes(16,'big'),
                self.get_sequence_number().to_bytes(32,'big'),
                self.get_ack_number().to_bytes(32,'big'),
                self.get_flag().to_bytes(16, 'big'),
                self.get_window_size().to_bytes(16,'big')]
-    s = ''
     for res in results:
-      s = s + str(res)
-    s = s.replace('b','').replace("'", '')
-    return s
+      b += res
+    return b
+
+  def turn_bytes_to_header(self, bheader):
+    if(len(bheader) > 128):
+      print("ERROR header too big")
+      return
+    self.ports = [int.from_bytes(bheader[0:16],'big'),
+                  int.from_bytes(bheader[16:32],'big')]
+    self.numbers = [int.from_bytes(bheader[32:64],'big'),
+                    int.from_bytes(bheader[64:96],'big')]
+    self.specifications = [int.from_bytes(bheader[96:112],'big'),
+                           int.from_bytes(bheader[112:128],'big')]
 
   def decide_seq_and_ack(self, type, previous_seq = 0, previous_ack = 0):
     if type == 'data' or type == 'SYN' or type == 'FIN':
@@ -71,10 +80,10 @@ class CanalPlusHeader(object):
     self.numbers[1] = value
   
   def set_flag(self, value):
-    self.specifications[1] = value
+    self.specifications[0] = value
   
   def set_window_size(self, value):
-    self.specifications[2] = value
+    self.specifications[1] = value
     
   def set_checksum(self, value):
     self.checksum = value
@@ -91,14 +100,11 @@ class CanalPlusHeader(object):
   def get_ack_number(self):
     return self.numbers[1]
     
-  def get_nb_of_fields(self):
+  def get_flag(self):
     return self.specifications[0]
     
-  def get_flag(self):
-    return self.specifications[1]
-    
   def get_window_size(self):
-    return self.specifications[2]
+    return self.specifications[1]
     
   def get_checksum(self):
     return self.checksum

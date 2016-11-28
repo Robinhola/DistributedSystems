@@ -27,7 +27,11 @@ class Connection(object):
   def __exit__(self, exc_type, exc_value, traceback):
     self.package_obj.cleanup()
 
-  def send(self, format, data): # C style format
+  def send(self, format, data):
+  """
+     C style format: %s, %d and %b supported
+     data should be iterable
+  """
     try:
       self.__sending_thread.add(format, data)
     except AttributeError:
