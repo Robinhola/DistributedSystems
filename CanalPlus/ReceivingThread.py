@@ -1,8 +1,10 @@
 class ReceivingThread(threading.Thread):
 def __init__(self, connection ,buffer_size = 35):
         super(ReceivingThread, self).__init__()
+        self.connection = connection
         self.receiving_buffer = queue()
-
+        self.messages_to_ack = {}
+        
     def run(self):
       while True:
         self.receive()
@@ -23,10 +25,19 @@ def __init__(self, connection ,buffer_size = 35):
 
     def message_needs_ack(self, message):
       pass
-      
+
     def send_ack(self, message):
-      pass
-      
+      seq, ack = self.gather_seqack(message)
+      message = Message("", "", "ACK", ack, seq + 1, self.connection)
+      UDP_IP = self.connection.get_ip_address()
+      UDP_PORT = self.connection.get_destination_port()
+      self.sock.sendto(str(message.content), (UDP_IP, UDP_PORT)) # BYTES ??
+
+    def gather_seqack(self, message):
+      seq = 0
+      ack = 0
+      return seq, ack
+
     def add_message_to_set(self, message):
       pass
 
@@ -36,7 +47,7 @@ def __init__(self, connection ,buffer_size = 35):
     def pop_message_from_set(self, seq):
       data = ''
       return data
-      
+
     def treat_data(self, data):
       pass
 

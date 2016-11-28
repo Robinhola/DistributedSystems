@@ -11,6 +11,14 @@ for k,j in l:
   print k
   print j
 
+def tuplee():
+  ack = 4
+  seq = 18
+  return ack, seq
+  
+a,c = tuplee()
+print a
+print c
 #conn = Connection.Connection(UDP_IP)
 #conn.send("%d", 3)
 

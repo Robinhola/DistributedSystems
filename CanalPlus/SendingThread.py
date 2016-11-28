@@ -116,12 +116,6 @@ class SendingThread(threading.Thread):
   def create_header(self):
     return CanalPlusHeader()
 
-  def send_ack(self, seq, ack):
-    message = Message("", "", "ACK", ack, seq + 1, self.connection)
-    UDP_IP = self.connection.get_ip_address()
-    UDP_PORT = self.connection.get_destination_port()
-    self.sock.sendto(str(message.content), (UDP_IP, UDP_PORT)) # NEED TO SEND BYTES
-
   def try_to_send(self, message):
     message.time_since_last_try = time.time()
     UDP_IP = self.connection.get_ip_address()
