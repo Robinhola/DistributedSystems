@@ -1,6 +1,7 @@
 # encoding: utf-8
 from SendingThread import *
 from random import randint
+import time
 
 
 class Connection(object):
@@ -50,6 +51,9 @@ class Connection(object):
   def connected(self):
     self.__status = "established"
 
+  def get_status(self):
+    return self.__status
+
   def get_destination_port(self):
     return self.__destination_port
 
@@ -57,15 +61,8 @@ class Connection(object):
     return self.__source_port
 
   def get_ip_address(self):
-    try:
-      return self.__ip_address
-    except AttributeError:
-      print ("no ip address"),
-      return ""
-
-  def get_status(self):
-    return self.__status
-
+    return self.__ip_address
+    
   def __start_sending(self):
     self.__sending_thread = SendingThread(self, self.__ip_address)
     self.__sending_thread.start()
@@ -75,31 +72,33 @@ class Connection(object):
     self.__receiving_thread.start()
 
   def __opening_procedure(self):
-    while (self.__status == "WAITING_ACKSYN"):
-      self.__send_SYN()
+    self.__status = 'OPENING'
+    self.__send_SYN()
+    while (self.__status != 'OPEN'):
+      time.sleep(0.1)
+    print("Connection is now OPEN")
 
   def __closing_procedure(self):
-    while (self.__status == "FIN"):
-      self.__send_FIN()
-    while (self.__status == "ACK"):
-      self.__send_ACK()
+    self.__status = 'CLOSING'
+    self.__send_FIN()
+    while (self.__status != 'CLOSED'):
+      time.sleep(0.1)
+    print("Connection is now CLOSED")
 
   def __send_SYN(self):
-    pass
+    self.__sending_thread.add(self, '', '', 'SYN')
 
   def __send_FIN(self):
-    pass
+    self.__sending_thread.add(self, '', '', 'FIN')
 
-  def __send_ACK(self):
-    pass
+  def __send_ACK(self, seq, ack):
+    self.__sending_thread.add_ack(seq, 'ACK', ack)
 
-  def __send_dataACK(self):
-    pass
+  def __send_dataACK(self, seq):
+    self.__sending_thread.add_ack(seq, 'dataACK')
 
-  def __send_SYNACK(self):
-    pass
+  def __send_SYNACK(self, seq):
+    self.__sending_thread.add_ack(seq, 'SYNACK')
 
   def __send_FINACK(self):
-    pass  
-
-  def send_ack(self, ack_type = "", seq, ack):
+    self.__sending_thread.add_ack(seq, 'FINACK')

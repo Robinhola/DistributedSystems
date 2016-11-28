@@ -28,20 +28,20 @@ class SendingThread(threading.Thread):
     self.connection.connected()
     while self.connection.get_status() == "established":
       if self.target_buffer_not_full():
-        if has_ack_to_process():
+        while self.has_ack_to_process():
           self.send_next_ack()
         if self.has_message_to_process():
           self.send_next_message()
       else:
         time.sleep(.300)
 
-  def add(self, format, data):
-    message = self.create_message(format, data)
+  def add(self, format, data, type = 'data'):
+    message = self.create_message(format, data, type)
     self.append_to_sending_list(message)
     self.add_to_ack_array(message)
 
   def add_ack(self, type, seq = 0, ack = 0):
-    ack_msg = create_ack(self, type, seq = 0, ack = 0):
+    ack_msg = self.create_ack(self, type, seq, ack)
     self.append_to_ack_list(ack_msg)
             
   def send_next_message(self):
@@ -57,11 +57,8 @@ class SendingThread(threading.Thread):
 
   def send_next_ack(self):
     print("sending ack")
-    ack_msg = self.pop_next_ack();
-    if message.time_since_last_try_not_short():
-      self.try_to_send(ack_msg)
-    else:
-      self.append_to_ack_list(ack_msg)
+    ack_msg = self.pop_next_ack()
+    self.try_to_send(ack_msg)
 
   def add_to_ack_array(self, message):
     try:
@@ -98,7 +95,7 @@ class SendingThread(threading.Thread):
     self.ack_array_next_free_cell.append(ack)
     message.delete()
 
-  def create_ack(self, type = 'ACK', seq = 0, ack = 0):
+  def create_ack(self, seq, type = 'dataACK', ack = 0):
     ack_msg = Message('', '', type)
     ack_msg.get_header().decide_seq_and_ack(type, seq, ack)
     return ack_msg
