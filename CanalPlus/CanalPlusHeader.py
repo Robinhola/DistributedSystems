@@ -6,13 +6,13 @@ RANGE = 99999
 
 class CanalPlusHeader(object):
   """docstring for CanalPlusHeader"""
-  def __init__(self,                     \
-                sequence_number = -1,    \
-                ack_number = -1,         \
-                source_port = 5005,      \
-                destination_port = 5005, \
-                nb_of_fields = 5,        \
-                flag = 0,                \
+  def __init__(self,
+                sequence_number = 0,
+                ack_number = 0,
+                source_port = 5005,
+                destination_port = 5005,
+                nb_of_fields = 0,
+                flag = 0,
                 window_size = 32):
     super(CanalPlusHeader, self).__init__()
     self.ports = [source_port, destination_port]
@@ -23,13 +23,17 @@ class CanalPlusHeader(object):
   random_number = 0
 
   def turn_into_bytes(self):
-    values = itertools.chain(self.ports, self.numbers, self.specifications)
-    results = bytes([])
-    for val in values:
-      results = results +(bytes(values))
-    results = results + bytes(self.checksum)
-    print (results)
-    return results
+    results = [self.get_source_port().to_bytes(16,'big'),
+               self.get_destination_port().to_bytes(16,'big'),
+               self.get_sequence_number().to_bytes(32,'big'),
+               self.get_ack_number().to_bytes(32,'big'),
+               self.get_flag().to_bytes(16, 'big'),
+               self.get_window_size().to_bytes(16,'big')]
+    s = ''
+    for res in results:
+      s = s + str(res)
+    s = s.replace('b','').replace("'", '')
+    return s
 
   def decide_seq_and_ack(self, type, previous_seq = 0, previous_ack = 0):
     if type == 'data' or type == 'SYN' or type == 'FIN':

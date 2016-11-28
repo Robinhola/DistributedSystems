@@ -11,7 +11,8 @@ def __init__(self, connection ,buffer_size = 35):
         for message in self.receiving_buffer:
           if self.message_needs_ack(message):
             self.send_ack(message)
-            self.add_message_to_set(message)
+            if self.contains_data(message):
+              self.add_message_to_set(message)
           else:
             seq = self.validate_ack(message)
             data = self.pop_message_from_set(seq)
@@ -26,9 +27,13 @@ def __init__(self, connection ,buffer_size = 35):
     def message_needs_ack(self, message):
       pass
 
-    def send_ack(self, message):
+    def send_ack(self, message, ack_type = ""):
       seq, ack = self.gather_seqack(message)
-      message = Message("", "", "ACK", ack, seq + 1, self.connection)
+      ack_message = Message("", "", 
+                            ack_type + "ACK", 
+                            ack, 
+                            seq + 1, 
+                            self.connection)
       UDP_IP = self.connection.get_ip_address()
       UDP_PORT = self.connection.get_destination_port()
       self.sock.sendto(str(message.content), (UDP_IP, UDP_PORT)) # BYTES ??

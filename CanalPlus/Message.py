@@ -13,21 +13,31 @@ class Message(object):
     self.__ack_number = -1
     self.__ack_status = False
     self.time_since_last_try = 0
-    self.content = [CanalPlusHeader(), self.format_data(format, data)]
-    print self.content
+    self.header = CanalPlusHeader()
+    self.content = ['', self.format_data(format, data)]
+    print (self.content)
     self.wrapping(connection, type, seq, ack)
 
   def wrapping(self, type, seq, ack, connection):
-    header = self.content[0]
     if (connection != None):
-      header.set_source_port(connection.get_source_port())
-      header.set_destination_port(connection.get_destination_port())
-    header.decide_seq_and_ack(type, seq, ack)
-    header.compute_checksum(self.content[1])
+      self.header.set_source_port(connection.get_source_port())
+      self.header.set_destination_port(connection.get_destination_port())
+    self.header.decide_seq_and_ack(type, seq, ack)
+    self.header.compute_checksum(self.content[1])
+    self.content[0] = self.header.turn_into_bytes()
 
   def format_data(self, format, data):
-    return bytes(data)
+    s = ''
+    if(not hasattr(data, '__iter__')):
+      data = [data]
+    for d in data:
+      if(format == '%s'):
+        s += d.encoding('utf-8')
+      elif(format == '%d'):
+        s += d.to_bytes(d.bit_length(), 'big').replace('b','').replace("'", '')
+    return s
 
+    return
   def time_since_last_try_not_short(self):
     diff = time.time() - self.time_since_last_try
     diff = diff * 1000
@@ -52,4 +62,4 @@ class Message(object):
     return self.__ack_status
     
   def get_header(self):
-    return self.content[0]
+    return self.header

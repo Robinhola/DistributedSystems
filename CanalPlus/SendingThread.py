@@ -89,7 +89,7 @@ class SendingThread(threading.Thread):
   def pop_next_message(self):
     message = self.sending_list.pop()
     ack = message.get_ack_number()
-    print "ACK NUMBER", ack
+    print ("ACK NUMBER", ack)
     if self.connection.ack_array[ack]:
       message.has_been_read()
     return message
