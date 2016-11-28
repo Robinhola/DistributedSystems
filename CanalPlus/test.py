@@ -63,4 +63,4 @@ header.turn_bytes_to_header(byt)
 print(header.ports[0])
 print(header.specifications[1])
 
-print(bytes('lol', 'u'))
+print(bytes('lol', 'utf-8'))
