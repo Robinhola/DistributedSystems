@@ -24,6 +24,8 @@ class Connection(object):
     self.__ip_address = ip_address
     self.__start_sending()
     self.__start_receiving()
+    self.__opening_procedure()
+    
       
   # unknown behavior
   def __exit__(self, exc_type, exc_value, traceback):
@@ -86,10 +88,10 @@ class Connection(object):
     print("Connection is now CLOSED")
 
   def __send_SYN(self):
-    self.__sending_thread.add(self, '', '', 'SYN')
+    self.__sending_thread.add('', '', 'SYN')
 
   def __send_FIN(self):
-    self.__sending_thread.add(self, '', '', 'FIN')
+    self.__sending_thread.add('', '', 'FIN')
 
   def __send_ACK(self, seq, ack):
     self.__sending_thread.add_ack(seq, 'ACK', ack)
