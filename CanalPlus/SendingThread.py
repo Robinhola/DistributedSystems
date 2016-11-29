@@ -27,7 +27,7 @@ class SendingThread(threading.Thread):
   def run(self):
     self.connection.connected()
     while self.connection.get_status() == "established":
-      if self.target_buffer_not_full():
+      if not self.target_buffer_full:
         while self.has_ack_to_process():
           self.send_next_ack()
         if self.has_message_to_process():
@@ -119,4 +119,5 @@ class SendingThread(threading.Thread):
     return len(self.sending_list) > 0
 
   def has_ack_to_process(self):
+    self.connection.connected()
     return len(self.ack_sending_list) > 0

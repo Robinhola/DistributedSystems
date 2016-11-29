@@ -1,5 +1,6 @@
 # encoding: utf-8
 from SendingThread import *
+from ReceivingThread import *
 from random import randint
 import time
 
@@ -68,7 +69,7 @@ class Connection(object):
     self.__sending_thread.start()
 
   def __start_receiving(self):
-    self.__receiving_thread = ReceivingThread()
+    self.__receiving_thread = ReceivingThread(self, )
     self.__receiving_thread.start()
 
   def __opening_procedure(self):
@@ -104,4 +105,5 @@ class Connection(object):
     self.__sending_thread.add_ack(seq, 'FINACK')
 
   def validate_ack(self, header):
-    pass
+    self.connected()
+    return header.get_ack_number()

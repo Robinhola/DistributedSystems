@@ -1,5 +1,6 @@
 # encoding: utf-8
 from CanalPlusHeader import *
+import time
 
 TIME_BEFORE_SENDING_AGAIN_ms = 1500 #ms
 
@@ -15,7 +16,7 @@ class Message(object):
     self.header = CanalPlusHeader(type)
     self.content = ['', self.format_data(format, data)]
     print (self.content)
-    self.wrapping(connection, type, seq, ack)
+    self.wrapping(type, seq, ack, connection)
 
   def wrapping(self, type, seq, ack, connection):
     if (connection != None):
@@ -27,7 +28,7 @@ class Message(object):
     b = bytes()
     if(not hasattr(data, '__iter__')):
         data = [data]
-    if(format == '%s'):
+    if(type(data) == str):
       for d in data:
         b = bytes(data, 'utf-8')
     elif(format == '%d'):

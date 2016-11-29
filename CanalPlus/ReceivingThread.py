@@ -1,14 +1,19 @@
 import threading
 import Message
 from CanalPlusHeader import *
+from queue import *
+import socket
+
 
 class ReceivingThread(threading.Thread):
   def __init__(self, connection ,buffer_size = 35):
     super(ReceivingThread, self).__init__()
     self.connection = connection
-    self.receiving_buffer = queue()
+    self.receiving_buffer = bytearray(b'------------')
     self.data_waiting_dict = {}
     self.data = []
+    self.sock = socket.socket(socket.AF_INET, # Internet
+                       socket.SOCK_DGRAM) # UDP
         
   def run(self): # WIP
     while True:
@@ -36,7 +41,7 @@ class ReceivingThread(threading.Thread):
     pass
 
   def receive(self):
-    socket.recvfrom_into(self.receiving_buffer)
+    self.sock.recvmsg_into([self.receiving_buffer])
 
   def send_ack(self, header):
     seq, ack = self.gather_seqack(header)
