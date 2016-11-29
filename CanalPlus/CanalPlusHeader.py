@@ -4,7 +4,7 @@ import itertools
 RANGE = 4294967295
 
 class CanalPlusHeader(object):
-  
+
   FLAGS = {'ACK':     0, 
           'SYN':      1, 
           'data':     2,
@@ -12,6 +12,13 @@ class CanalPlusHeader(object):
           'SYNACK':  11,
           'dataACK': 12,
           'FINACK':  13}
+
+  TYPES = {1:  'SYNACK', 
+           2: 'dataACK',
+           3:  'FINACK',
+          11:     'ACK',
+          12:     'ACK',
+          13:     'ACK'}
 
   def __init__(self,
               flag = 'ACK',
@@ -40,9 +47,6 @@ class CanalPlusHeader(object):
     return b
 
   def turn_bytes_to_header(self, bheader):
-    if(len(bheader) > 128):
-      print("ERROR header too big")
-      return
     self.ports = [int.from_bytes(bheader[0:16],'big'),
                   int.from_bytes(bheader[16:32],'big')]
     self.numbers = [int.from_bytes(bheader[32:64],'big'),
@@ -101,3 +105,12 @@ class CanalPlusHeader(object):
     
   def get_checksum(self):
     return self.checksum
+    
+  def message_needs_ack(self):
+    return self.get_flag() > 0
+    
+  def message_contains_data(self):
+    return self.get_flag() == 2
+    
+  def ack_some_message(self):
+    return self.get_flag() > 10

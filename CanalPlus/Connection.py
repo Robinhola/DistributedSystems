@@ -102,3 +102,6 @@ class Connection(object):
 
   def __send_FINACK(self):
     self.__sending_thread.add_ack(seq, 'FINACK')
+
+  def validate_ack(self, header):
+    pass

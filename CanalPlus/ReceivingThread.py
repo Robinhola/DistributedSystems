@@ -1,60 +1,62 @@
 import threading
-
+import Message
+from CanalPlusHeader import *
 
 class ReceivingThread(threading.Thread):
   def __init__(self, connection ,buffer_size = 35):
     super(ReceivingThread, self).__init__()
     self.connection = connection
     self.receiving_buffer = queue()
-    self.messages_to_ack = {}
+    self.data_waiting_dict = {}
+    self.data = []
         
-    def run(self):
-      while True:
-        self.receive()
-        for message in self.receiving_buffer:
-          if self.message_needs_ack(message):
-            self.send_ack(message)
-            if self.contains_data(message):
-              self.add_message_to_set(message)
+  def run(self): # WIP
+    while True:
+      self.receive()
+      for message in self.receiving_buffer:
+        header = CanalPlusHeader()
+        header.turn_bytes_to_header(message)
+        seq = connection.validate_ack(header)
+        if seq > -1: 
+          if header.message_needs_ack():
+            self.send_acks(header)
+            if header.message_contains_data():
+              self.add_message_to_dict(seq, message[128:])
           else:
-            seq = self.validate_ack(message)
-            data = self.pop_message_from_set(seq)
+            data = self.pop_message_from_dict(seq)
             self.treat_data(data)
 
-    def send_signal_buffer_full(self):
-      pass
+  def read(self):
+    data = bytes()
+    if len(self.data) > 0:
+      data = self.data.pop()
+    return data
 
-    def receive(self):
-      socket.recvfrom_into(self.receiving_buffer)
+  def send_signal_buffer_full(self):
+    pass
 
-    def message_needs_ack(self, message):
-      pass
+  def receive(self):
+    socket.recvfrom_into(self.receiving_buffer)
 
-    def send_ack(self, message, ack_type = ""):
-      seq, ack = self.gather_seqack(message)
-      ack_message = Message("", "", 
-                            ack_type + "ACK", 
-                            ack, 
-                            seq + 1, 
-                            self.connection)
-      UDP_IP = self.connection.get_ip_address()
-      UDP_PORT = self.connection.get_destination_port()
-      self.sock.sendto(str(message.content), (UDP_IP, UDP_PORT)) # BYTES ??
+  def send_ack(self, header):
+    seq, ack = self.gather_seqack(header)
+    flag = header.get_flag()
+    type = CanalPlusHeader.TYPES[flag]
+    self.connection.__sending_thread.add_ack(seq, type, ack)
 
-    def gather_seqack(self, message):
-      seq = 0
-      ack = 0
-      return seq, ack
+  def gather_seqack(self, header):
+    seq = header.get_sequence_number()
+    ack = header.get_ack_number()
+    return seq, ack
 
-    def add_message_to_set(self, message):
-      pass
+  def add_message_to_dict(self, seq, message):
+    self.data_waiting_dict[seq: message]
 
-    def validate_ack(self, message):
-      pass
+  def pop_message_from_dict(self, seq):
+    data = bytes()
+    data = self.data_waiting_dict[seq]
+    del self.data_waiting_dict[seq]
+    return data
 
-    def pop_message_from_set(self, seq):
-      data = ''
-      return data
-
-    def treat_data(self, data):
-      pass
+  def treat_data(self, data):
+    self.data.append(data)
