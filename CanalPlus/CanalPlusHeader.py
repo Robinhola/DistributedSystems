@@ -56,7 +56,7 @@ class CanalPlusHeader(object):
 
   def decide_seq_and_ack(self, type, previous_seq = 0, previous_ack = 0):
     if type == 'dataACK' or type =='SYNACK' or type == 'FINACK':
-      random_number = randint(RANGE)
+      random_number = randint(1, RANGE)
       self.set_sequence_number(random_number)
       self.set_ack_number(previous_seq + 1)
     elif type == 'ACK':

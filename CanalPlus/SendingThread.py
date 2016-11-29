@@ -41,16 +41,18 @@ class SendingThread(threading.Thread):
     self.add_to_ack_array(message)
 
   def add_ack(self, type, seq = 0, ack = 0):
-    ack_msg = self.create_ack(self, type, seq, ack)
+    ack_msg = self.create_ack(type, seq, ack)
     self.append_to_ack_list(ack_msg)
-            
+
   def send_next_message(self):
-    print("sending message")
     message = self.pop_next_message();
     received = message.get_ack_status()
     if not received:
       if message.time_since_last_try_not_short():
+        print("sending message")
         self.try_to_send(message)
+      elif len(self.sending_list) == 0:
+        time.sleep(TIME_BEFORE_SENDING_AGAIN_ms/1000)
       self.append_to_sending_list(message)
     else:
       self.remove_message(message)
@@ -69,7 +71,7 @@ class SendingThread(threading.Thread):
       indice = len(self.connection.ack_array) - 1
     message.set_ack_number(indice)
     seq = message.get_header().get_sequence_number()
-    connection.__dict_seq_index[seq] = indice
+    self.connection.link(seq, indice)
 
   def create_message(self, format, data, type = 'data'):
     random_number = randint(1, RANGE)
@@ -80,7 +82,6 @@ class SendingThread(threading.Thread):
   def pop_next_message(self):
     message = self.sending_list.pop()
     ack = message.get_ack_number()
-    print ("ACK NUMBER", ack)
     if self.connection.ack_array[ack]:
       message.has_been_read()
     return message
@@ -112,7 +113,7 @@ class SendingThread(threading.Thread):
     UDP_IP = self.connection.get_ip_address()
     UDP_PORT = self.connection.get_destination_port()
     content += message.content[0] + message.content[1]
-    message.time_since_last_try = time.time()
+    message.time_since_last_try = int(round(time.time() * 1000))
     self.sock.sendto(content, (UDP_IP, UDP_PORT))
 
   def has_message_to_process(self):

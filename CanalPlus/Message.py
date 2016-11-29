@@ -2,7 +2,7 @@
 from CanalPlusHeader import *
 import time
 
-TIME_BEFORE_SENDING_AGAIN_ms = 1500 #ms
+TIME_BEFORE_SENDING_AGAIN_ms = 400 #ms
 
 class Message(object):
   """docstring for Message"""
@@ -15,7 +15,6 @@ class Message(object):
     self.time_since_last_try = 0
     self.header = CanalPlusHeader(type)
     self.content = ['', self.format_data(format, data)]
-    print (self.content)
     self.wrapping(type, seq, ack, connection)
 
   def wrapping(self, type, seq, ack, connection):
@@ -42,8 +41,8 @@ class Message(object):
     return b
 
   def time_since_last_try_not_short(self):
-    diff = time.time() - self.time_since_last_try
-    diff = diff * 1000
+    diff = int(round(time.time() * 1000)) - self.time_since_last_try
+    print('the diff is ', diff)
     return diff > TIME_BEFORE_SENDING_AGAIN_ms 
 
   def set_id(self, id):

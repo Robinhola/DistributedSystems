@@ -69,3 +69,10 @@ a = 4294967295
 print(pow(2,32))
 print(a)
 print(a.bit_length())
+
+
+import time
+millis = int(round(time.time() * 1000))
+time.sleep(0.3)
+millis = int(round(time.time() * 1000)) - millis
+print (millis)

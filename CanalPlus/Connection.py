@@ -10,18 +10,16 @@ class Connection(object):
     Object can be instanced in receiving or sending mode depending on the
     presence of an argument on creation.
   """
-  def __init__(self, ip_address = "", destination_port = 5005, source_port = 5005):
+  def __init__(self, ip_address = "127.0.0.1", destination_port = 5005, source_port = 5005):
     super(Connection, self).__init__()
     self.__status = "closed"
     self.__source_port = source_port
     self.__destination_port = destination_port
     self.__dict_seq_index = {}
     self.ack_array = []
-    if ip_address == "":
-      self.__start_receiving()
-    else:
-      self.__ip_address = ip_address
-      self.__start_sending()
+    self.__ip_address = ip_address
+    self.__start_sending()
+    self.__start_receiving()
       
   # unknown behavior
   def __exit__(self, exc_type, exc_value, traceback):
@@ -106,4 +104,12 @@ class Connection(object):
 
   def validate_ack(self, header):
     self.connected()
-    return header.get_ack_number()
+    ack = header.get_ack_number()
+    print("hey this is a ack", ack)
+    return ack
+    
+  def link(self, seq, indice):
+    self.__dict_seq_index[seq]= indice
+    
+  def add_ack(self, seq, type, ack):
+    self.__sending_thread.add_ack(seq, type, ack)
