@@ -1,12 +1,8 @@
 import threading
 import Message
 from CanalPlusHeader import *
-from queue import *
 import socket
 
-
-UDP_IP = "127.0.0.1"
-UDP_PORT = 5005
 
 class ReceivingThread(threading.Thread):
   def __init__(self, connection ,buffer_size = 35):
@@ -26,7 +22,6 @@ class ReceivingThread(threading.Thread):
   def run(self): # WIP
     while True:
       self.receive()
-      print("data received", self.receiving_buffer)
       for message in self.receiving_buffer:
         message = self.receiving_buffer.pop()
         header = CanalPlusHeader()
@@ -51,9 +46,7 @@ class ReceivingThread(threading.Thread):
     pass
 
   def receive(self):
-    print('reception??')
     data, addr = self.sock.recvfrom(1024) # buffer size is 1024 bytes
-    print(data)
     self.receiving_buffer.append(data)
 
   def send_ack(self, header):

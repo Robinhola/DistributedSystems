@@ -42,7 +42,6 @@ class Message(object):
 
   def time_since_last_try_not_short(self):
     diff = int(round(time.time() * 1000)) - self.time_since_last_try
-    print('the diff is ', diff)
     return diff > TIME_BEFORE_SENDING_AGAIN_ms 
 
   def set_id(self, id):
