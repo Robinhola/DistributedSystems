@@ -4,6 +4,10 @@ from ReceivingThread import *
 from random import randint
 import time
 
+STATUS = ['OPENING',
+          'OPEN',
+          'CLOSING',
+          'CLOSED']
 
 class Connection(object):
   """
@@ -46,9 +50,6 @@ class Connection(object):
   def close(self):
     self.__closing_procedure() 
     self.__exit__(self, None, None, None)
-
-  def connected(self):
-    self.__status = "established"
 
   def get_status(self):
     return self.__status
@@ -103,8 +104,15 @@ class Connection(object):
     self.__sending_thread.add_ack(seq, 'FINACK')
 
   def validate_ack(self, header): ###### WIP
-    self.connected()
+    flag = header.get_flag()
     ack = header.get_ack_number()
+    indice = self.look_for_msg(ack)
+    if indice >= 0:
+      self.ack_array[indice] = True
+      if self.__status == 'OPENING' and CanalPlusHeader.FLAG['SYNACK'] == flag:
+        self.__status = 'OPEN'
+      if self.__status == 'CLOSING' and CanalPlusHeader.FLAG['FINACK'] == flag:
+        self.__status = 'CLOSED'
     return ack
     
   def link(self, seq, indice):
@@ -112,3 +120,11 @@ class Connection(object):
     
   def add_ack(self, seq, type, ack):
     self.__sending_thread.add_ack(seq, type, ack)
+    
+  def look_for_msg(self, ack):
+    try:
+      indice = self.__dict_seq_index[ack - 1]
+    except:
+      print("message introuvable")
+      indice = -1
+    return indice

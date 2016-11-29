@@ -25,8 +25,7 @@ class SendingThread(threading.Thread):
   random_number = 0
 
   def run(self):
-    self.connection.connected()
-    while self.connection.get_status() == "established":
+    while self.connection.get_status() != "CLOSED":
       if not self.target_buffer_full:
         while self.has_ack_to_process():
           self.send_next_ack()
@@ -83,7 +82,7 @@ class SendingThread(threading.Thread):
     message = self.sending_list.pop()
     ack = message.get_ack_number()
     if self.connection.ack_array[ack]:
-      message.has_been_read()
+      message.has_been_received()
     return message
 
   def append_to_sending_list(self, message):
@@ -120,5 +119,4 @@ class SendingThread(threading.Thread):
     return len(self.sending_list) > 0
 
   def has_ack_to_process(self):
-    self.connection.connected()
     return len(self.ack_sending_list) > 0
