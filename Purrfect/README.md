@@ -16,7 +16,10 @@ Purrfect will try to connect back to the faulty machine to detect when it is bac
 
 Direction = up or down
 
-frequencyofpings is in milliseconds as well as timeout.
+frequencyofpings is in milliseconds.
+
+Timeout represents the number of message to be lost before a machine is declared faulty.
+
 
 This allows the user to declare a machine faulty as quickly or as slowly as it can.
 
