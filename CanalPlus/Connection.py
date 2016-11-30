@@ -107,7 +107,7 @@ class Connection(object):
   def add_ack(self, seq, type, ack):
     self.__sending_thread.add_ack(seq, type, ack)
     
-  def look_for_msg(self, ack):
+  def __look_for_msg(self, ack):
     try:
       indice = self.__dict_seq_index[ack]
     except:
@@ -118,12 +118,12 @@ class Connection(object):
     flag = header.get_flag()
     seq = header.get_sequence_number()
     if flag > 10:
-      self.handle_msgACK(header)
+      self.__handle_msgACK(header)
     elif flag > 0:
-      self.handle_msg(header, received_msg)
+      self.__handle_msg(header, received_msg)
     else:
-      self.handle_ACK(header)
-    indice = self.look_for_msg(seq)
+      self.__handle_ACK(header)
+    indice = self.__look_for_msg(seq)
     if indice >= 0:
       self.ack_array[indice] = True
     return seq
@@ -136,7 +136,7 @@ class Connection(object):
     # print('new IP: ', ip) # DEBUG
     self.__ip_address = ip
 
-  def handle_msgACK(self, header):
+  def __handle_msgACK(self, header):
     flag = header.get_flag()
     if flag == CanalPlusHeader.FLAGS['dataACK'] and self.status == 'CONNECTED':
       # HERE INSERT TIMEOUT MANAGEMENT
@@ -146,7 +146,7 @@ class Connection(object):
     elif flag == CanalPlusHeader.FLAGS['FINACK'] and self.status == 'CLOSING':
       self.set_status('CLOSED')
     
-  def handle_msg(self, header, received_msg):
+  def __handle_msg(self, header, received_msg):
     flag = header.get_flag()
     if flag == CanalPlusHeader.FLAGS['data'] and self.status == 'CONNECTED':
       seq = header.get_sequence_number()
@@ -156,7 +156,7 @@ class Connection(object):
     elif flag == CanalPlusHeader.FLAGS['FIN'] and self.status == 'CONNECTED':
       self.set_status('CLOSING')
 
-  def handle_ACK(self, header):
+  def __handle_ACK(self, header):
     flag = header.get_flag()
     if flag == CanalPlusHeader.FLAGS['ACK'] and self.status == 'CONNECTING':
       self.set_status('CONNECTED')
