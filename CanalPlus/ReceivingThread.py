@@ -1,3 +1,4 @@
+import time
 import threading
 import Message
 from CanalPlusHeader import *
@@ -21,10 +22,9 @@ class ReceivingThread(threading.Thread):
       
   def run(self): # WIP
     while self.connection.get_status() != 'FINISHED':
-      print("RECEPTION")
       self.receive()
       while len(self.receiving_buffer) > 0:
-        message = self.receiving_buffer.pop()
+        message = self.receiving_buffer.pop(0)
         header = CanalPlusHeader()
         header.turn_bytes_to_header(message)
         seq = self.connection.handle_incoming(header, message)
@@ -32,15 +32,16 @@ class ReceivingThread(threading.Thread):
           if header.message_needs_ack():
             self.send_ack(header)
             if header.message_contains_data():
-              self.add_message_to_dict(seq, message[128:])    # CAREFUL SEQS
+              self.add_message_to_dict(seq, message[128:])    # CAREFUL SEQS:
           else:
             data = self.pop_message_from_dict(seq)
             self.treat_data(data)
 
   def read(self):
     data = bytes()
-    if len(self.data) > 0:
-      data = self.data.pop()
+    while(len(self.data) == 0):
+      time.sleep(0.3)
+    data = self.data.pop(0)
     return data
 
   def send_signal_buffer_full(self):
@@ -52,7 +53,6 @@ class ReceivingThread(threading.Thread):
       self.connection.set_ip_address(addr[0])
     header = CanalPlusHeader()
     header.turn_bytes_to_header(data)
-    print (header.get_flag())
     self.receiving_buffer.append(data)
 
   def send_ack(self, header):
@@ -79,4 +79,5 @@ class ReceivingThread(threading.Thread):
     return data
 
   def treat_data(self, data):
-    self.data.append(data)
+    if len(data) > 0:
+      self.data.append(data)

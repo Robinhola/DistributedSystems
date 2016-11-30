@@ -74,16 +74,15 @@ class Connection(object):
     self.set_status('CONNECTING')
     self.__send_SYN()
     while (self.__status != 'CONNECTED'):
-      print('sleeping')
       time.sleep(0.1)                               # CAREFUL
-    print("Connection is now CONNECTED")
+    # print("Connection is now CONNECTED") # DEBUG
 
   def __closing_procedure(self):
     self.set_status('CLOSING')
     self.__send_FIN()
     while (self.__status != 'CLOSED'):
       time.sleep(0.1)
-    print("Connection is now CLOSED")
+    # print("Connection is now CLOSED") # DEBUG
 
   def __send_SYN(self):
     self.__sending_thread.add('', '', 'SYN')
@@ -103,18 +102,6 @@ class Connection(object):
   def __send_FINACK(self):
     self.__sending_thread.add_ack(seq, 'FINACK')
 
-  def validate_ack(self, header): ###### WIP
-    flag = header.get_flag()
-    ack = header.get_ack_number()
-    indice = self.look_for_msg(ack)
-    if indice >= 0:
-      self.ack_array[indice] = True
-      if self.__status == 'OPENING' and CanalPlusHeader.FLAG['SYNACK'] == flag:
-        self.set_status('OPEN')
-      if self.__status == 'CLOSING' and CanalPlusHeader.FLAG['FINACK'] == flag:
-        self.set_status('CLOSED')
-    return ack
-    
   def link(self, seq, indice):
     self.__dict_seq_index[seq]= indice
     
@@ -123,7 +110,7 @@ class Connection(object):
     
   def look_for_msg(self, ack):
     try:
-      indice = self.__dict_seq_index[ack - 1]
+      indice = self.__dict_seq_index[ack]
     except:
       indice = -1
     return indice
@@ -131,10 +118,11 @@ class Connection(object):
   def handle_incoming(self, header, received_msg):
     flag = header.get_flag()
     status = self.__status
+    seq = header.get_sequence_number()
     if flag == CanalPlusHeader.FLAGS['ACK'] and status == 'CONNECTING':
       status = 'CONNECTED'
     elif flag == CanalPlusHeader.FLAGS['data'] and status == 'CONNECTED':
-      self.__receiving_thread.add_message_to_dict(seq, message[128:])
+      self.__receiving_thread.add_message_to_dict(seq, received_msg[128:])
     elif flag == CanalPlusHeader.FLAGS['SYN'] and status == 'CLOSED':
       ### TO DO HERE SET LISTENNING IP
       status = 'CONNECTING'
@@ -147,20 +135,17 @@ class Connection(object):
       status = 'CONNECTED'
     elif flag == CanalPlusHeader.FLAGS['FINACK']:
       pass
-    else:
-      return 3
     self.set_status(status)
     ack = header.get_ack_number()
-    seq = header.get_sequence_number()
-    indice = self.look_for_msg(ack)
+    indice = self.look_for_msg(seq)
     if indice >= 0:
       self.ack_array[indice] = True
     return seq
     
   def set_status(self, status):
-    print(status)
+    # print('new Status:', status) # DEBUG
     self.__status = status
     
   def set_ip_address(self, ip):
-    print('new IP: ', ip)
+    # print('new IP: ', ip) # DEBUG
     self.__ip_address = ip

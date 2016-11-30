@@ -50,7 +50,6 @@ class SendingThread(threading.Thread):
     received = message.get_ack_status()
     if not received:
       if message.time_since_last_try_not_short():
-        print("sending message", message)
         self.try_to_send(message)
       elif len(self.sending_list) == 0:
         time.sleep(TIME_BEFORE_SENDING_AGAIN_ms/1000)
@@ -59,14 +58,13 @@ class SendingThread(threading.Thread):
       self.remove_message(message)
 
   def send_next_ack(self):
-    print("sending ack")
     ack_msg = self.pop_next_ack()
-    print('TYPE = ', ack_msg.type)
+    # print('sending a ack of TYPE = ', ack_msg.type) # DEBUG
     self.try_to_send(ack_msg)
 
   def add_to_ack_array(self, message):
     try:
-      indice = self.ack_array_next_free_cell.pop()
+      indice = self.ack_array_next_free_cell.pop(0)
       self.connection.ack_array[indice] = False
     except Exception:
       self.connection.ack_array.append(False)
@@ -82,7 +80,7 @@ class SendingThread(threading.Thread):
     return message
 
   def pop_next_message(self):
-    message = self.sending_list.pop()
+    message = self.sending_list.pop(0)
     ack = message.get_ack_number()
     if self.connection.ack_array[ack]:
       message.has_been_received()
@@ -96,8 +94,7 @@ class SendingThread(threading.Thread):
     id_num = message.get_id()
     self.connection.ack_array[ack] = False
     self.ack_array_next_free_cell.append(ack)
-    message.delete()
-
+    
   def create_ack(self, seq, type = 'dataACK', ack = 0):
     ack_msg = Message('', '', type)
     ack_msg.get_header().decide_seq_and_ack(type, seq, ack)
@@ -105,7 +102,7 @@ class SendingThread(threading.Thread):
     return ack_msg
 
   def pop_next_ack(self):
-    ack_msg = self.ack_sending_list.pop()
+    ack_msg = self.ack_sending_list.pop(0)
     return ack_msg
 
   def append_to_ack_list(self, ack_msg):
@@ -114,7 +111,6 @@ class SendingThread(threading.Thread):
   def try_to_send(self, message):
     content = bytes()
     UDP_IP = self.connection.get_ip_address()
-    print(UDP_IP)
     UDP_PORT = self.connection.get_destination_port()
     content += message.content[0] + message.content[1]
     message.time_since_last_try = int(round(time.time() * 1000))
@@ -125,3 +121,4 @@ class SendingThread(threading.Thread):
 
   def has_ack_to_process(self):
     return len(self.ack_sending_list) > 0
+
