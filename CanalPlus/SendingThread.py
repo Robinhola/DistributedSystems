@@ -61,6 +61,7 @@ class SendingThread(threading.Thread):
   def send_next_ack(self):
     print("sending ack")
     ack_msg = self.pop_next_ack()
+    print('TYPE = ', ack_msg.type)
     self.try_to_send(ack_msg)
 
   def add_to_ack_array(self, message):
@@ -113,6 +114,7 @@ class SendingThread(threading.Thread):
   def try_to_send(self, message):
     content = bytes()
     UDP_IP = self.connection.get_ip_address()
+    print(UDP_IP)
     UDP_PORT = self.connection.get_destination_port()
     content += message.content[0] + message.content[1]
     message.time_since_last_try = int(round(time.time() * 1000))

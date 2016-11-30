@@ -67,7 +67,7 @@ class Connection(object):
     self.__sending_thread.start()
 
   def __start_receiving(self):
-    self.__receiving_thread = ReceivingThread(self, )
+    self.__receiving_thread = ReceivingThread(self)
     self.__receiving_thread.start()
 
   def __opening_procedure(self):
@@ -125,14 +125,15 @@ class Connection(object):
     try:
       indice = self.__dict_seq_index[ack - 1]
     except:
-      print("message introuvable")
       indice = -1
     return indice
     
   def handle_incoming(self, header, received_msg):
     flag = header.get_flag()
     status = self.__status
-    if flag == CanalPlusHeader.FLAGS['data'] and status == 'CONNECTED':
+    if flag == CanalPlusHeader.FLAGS['ACK'] and status == 'CONNECTING':
+      status = 'CONNECTED'
+    elif flag == CanalPlusHeader.FLAGS['data'] and status == 'CONNECTED':
       self.__receiving_thread.add_message_to_dict(seq, message[128:])
     elif flag == CanalPlusHeader.FLAGS['SYN'] and status == 'CLOSED':
       ### TO DO HERE SET LISTENNING IP
@@ -146,6 +147,8 @@ class Connection(object):
       status = 'CONNECTED'
     elif flag == CanalPlusHeader.FLAGS['FINACK']:
       pass
+    else:
+      return 3
     self.set_status(status)
     ack = header.get_ack_number()
     seq = header.get_sequence_number()
@@ -158,3 +161,6 @@ class Connection(object):
     print(status)
     self.__status = status
     
+  def set_ip_address(self, ip):
+    print('new IP: ', ip)
+    self.__ip_address = ip

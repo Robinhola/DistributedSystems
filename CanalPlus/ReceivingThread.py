@@ -21,6 +21,7 @@ class ReceivingThread(threading.Thread):
       
   def run(self): # WIP
     while self.connection.get_status() != 'FINISHED':
+      print("RECEPTION")
       self.receive()
       while len(self.receiving_buffer) > 0:
         message = self.receiving_buffer.pop()
@@ -47,6 +48,11 @@ class ReceivingThread(threading.Thread):
 
   def receive(self):
     data, addr = self.sock.recvfrom(1024) # buffer size is 1024 bytes
+    if (self.connection.get_ip_address() == '0.0.0.0'):
+      self.connection.set_ip_address(addr[0])
+    header = CanalPlusHeader()
+    header.turn_bytes_to_header(data)
+    print (header.get_flag())
     self.receiving_buffer.append(data)
 
   def send_ack(self, header):
