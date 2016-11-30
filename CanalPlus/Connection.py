@@ -22,33 +22,32 @@ class Connection(object):
     self.__source_port = source_port
     self.__destination_port = destination_port
     self.__dict_seq_index = {}
+    self.new_msg_event = threading.Event()
     self.__start_sending()
     self.__start_receiving()    
     self.ack_array = []
-      
+
   # unknown behavior
   def __exit__(self, exc_type, exc_value, traceback):
-    self.package_obj.cleanup()
+    # self.package_obj.cleanup()
+    pass
 
   def send(self, format, data):
     """
     C style format: %s, %d and %b supported
     data should be iterable
     """
+    self.new_msg_event.set()
     if self.status == 'CLOSED':
       self.__opening_procedure()
     self.__sending_thread.add(format, data)
 
   def receive(self):
-    try:
-      return self.__receiving_thread.read()
-    except AttributeError:
-      self.__start_receiving()
-      return self.__receiving_thread.read()    
+    return self.__receiving_thread.read()
 
   def close(self):
     self.__closing_procedure() 
-    self.__exit__(self, None, None, None)
+    self.__exit__(None, None, None)
 
   def get_status(self):
     return self.status
@@ -61,7 +60,7 @@ class Connection(object):
 
   def get_ip_address(self):
     return self.__ip_address
-    
+
   def __start_sending(self):
     self.__sending_thread = SendingThread(self, self.__ip_address)
     self.__sending_thread.start()
@@ -161,4 +160,3 @@ class Connection(object):
     flag = header.get_flag()
     if flag == CanalPlusHeader.FLAGS['ACK'] and self.status == 'CONNECTING':
       self.set_status('CONNECTED')
-      

@@ -7,6 +7,7 @@ import socket
 
 RANGE = 4294967295
 
+TIME_BETWEEN_FIRST_SYN = 0.1 # ms
 
 class SendingThread(threading.Thread):
 
@@ -21,19 +22,22 @@ class SendingThread(threading.Thread):
     self.ack_array_next_free_cell = []
     self.sock = socket.socket(socket.AF_INET, # Internet
                        socket.SOCK_DGRAM) # UDP
-
+    
   random_number = 0
   
   def run(self):
     while self.connection.get_status() != 'FINISHED':
       while self.connection.get_status() != 'CLOSED':
+        self.connection.new_msg_event.wait() 
         if not self.target_buffer_full:
           while self.has_ack_to_process():
             self.send_next_ack()
           if self.has_message_to_process():
             self.send_next_message()
+          elif not self.has_message_to_process():
+            self.connection.new_msg_event.clear() 
         else:
-          time.sleep(.300)
+          time.sleep(TIME_BETWEEN_FIRST_SYN)
       time.sleep(.500)
 
   def add(self, format, data, type = 'data'):

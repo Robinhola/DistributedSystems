@@ -30,6 +30,7 @@ class ReceivingThread(threading.Thread):
         seq = self.connection.handle_incoming(header, message)
         if seq > 0: 
           if header.message_needs_ack():
+            self.connection.new_msg_event.set()
             self.send_ack(header)
             if header.message_contains_data():
               self.add_message_to_dict(seq, message[128:])    # CAREFUL SEQS:
