@@ -23,16 +23,18 @@ class SendingThread(threading.Thread):
                        socket.SOCK_DGRAM) # UDP
 
   random_number = 0
-
+  
   def run(self):
-    while self.connection.get_status() != "CLOSED":
-      if not self.target_buffer_full:
-        while self.has_ack_to_process():
-          self.send_next_ack()
-        if self.has_message_to_process():
-          self.send_next_message()
-      else:
-        time.sleep(.300)
+    while self.connection.get_status() != 'FINISHED':
+      while self.connection.get_status() != 'CLOSED':
+        if not self.target_buffer_full:
+          while self.has_ack_to_process():
+            self.send_next_ack()
+          if self.has_message_to_process():
+            self.send_next_message()
+        else:
+          time.sleep(.300)
+      time.sleep(.500)
 
   def add(self, format, data, type = 'data'):
     message = self.create_message(format, data, type)
@@ -48,7 +50,7 @@ class SendingThread(threading.Thread):
     received = message.get_ack_status()
     if not received:
       if message.time_since_last_try_not_short():
-        print("sending message")
+        print("sending message", message)
         self.try_to_send(message)
       elif len(self.sending_list) == 0:
         time.sleep(TIME_BEFORE_SENDING_AGAIN_ms/1000)
@@ -98,6 +100,7 @@ class SendingThread(threading.Thread):
   def create_ack(self, seq, type = 'dataACK', ack = 0):
     ack_msg = Message('', '', type)
     ack_msg.get_header().decide_seq_and_ack(type, seq, ack)
+    ack_msg.wrapping(type, seq, ack, self.connection)
     return ack_msg
 
   def pop_next_ack(self):

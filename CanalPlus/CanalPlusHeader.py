@@ -68,10 +68,10 @@ class CanalPlusHeader(object):
     return 1
 
   def set_source_port(self, value):
-    self.port[0] = value
+    self.ports[0] = value
   
   def set_destination_port(self, value):
-    self.port[1] = value
+    self.ports[1] = value
   
   def set_sequence_number(self, value):
     self.numbers[0] = value

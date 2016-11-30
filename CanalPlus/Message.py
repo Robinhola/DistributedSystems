@@ -6,7 +6,7 @@ TIME_BEFORE_SENDING_AGAIN_ms = 400 #ms
 
 class Message(object):
   """docstring for Message"""
-  def __init__(self, format, data, type = 'data', seq = -1, ack = -1, connection = None):
+  def __init__(self, format, data, type = 'data', seq = 0, ack = 0, connection = None):
     super(Message, self).__init__()
     self.type = type
     self.__id = 0
@@ -18,6 +18,8 @@ class Message(object):
     self.wrapping(type, seq, ack, connection)
 
   def wrapping(self, type, seq, ack, connection):
+    self.header.set_sequence_number(seq)
+    self.header.set_ack_number(ack)
     if (connection != None):
       self.header.set_source_port(connection.get_source_port())
       self.header.set_destination_port(connection.get_destination_port())

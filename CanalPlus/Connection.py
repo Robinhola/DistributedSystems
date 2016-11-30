@@ -4,10 +4,11 @@ from ReceivingThread import *
 from random import randint
 import time
 
-STATUS = ['OPENING',
-          'OPEN',
+STATUS = ['CONNECTING',
+          'CONNECTED',
           'CLOSING',
-          'CLOSED']
+          'CLOSED',
+          'FINISHED']
 
 class Connection(object):
   """
@@ -16,16 +17,14 @@ class Connection(object):
   """
   def __init__(self, ip_address = "0.0.0.0", destination_port = 5005, source_port = 5005):
     super(Connection, self).__init__()
-    self.__status = "closed"
+    self.set_status('CLOSED')
+    self.__ip_address = ip_address
     self.__source_port = source_port
     self.__destination_port = destination_port
     self.__dict_seq_index = {}
-    self.ack_array = []
-    self.__ip_address = ip_address
     self.__start_sending()
-    self.__start_receiving()
-    self.__opening_procedure()
-    
+    self.__start_receiving()    
+    self.ack_array = []
       
   # unknown behavior
   def __exit__(self, exc_type, exc_value, traceback):
@@ -36,11 +35,9 @@ class Connection(object):
     C style format: %s, %d and %b supported
     data should be iterable
     """
-    try:
-      self.__sending_thread.add(format, data)
-    except AttributeError:
-      self.__start_sending()
-      self.__sending_thread.add(format, data)
+    if self.__status == 'CLOSED':
+      self.__opening_procedure()
+    self.__sending_thread.add(format, data)
 
   def receive(self):
     try:
@@ -74,14 +71,15 @@ class Connection(object):
     self.__receiving_thread.start()
 
   def __opening_procedure(self):
-    self.__status = 'OPENING'
+    self.set_status('CONNECTING')
     self.__send_SYN()
-    while (self.__status != 'OPEN'):
-      time.sleep(0.1)
-    print("Connection is now OPEN")
+    while (self.__status != 'CONNECTED'):
+      print('sleeping')
+      time.sleep(0.1)                               # CAREFUL
+    print("Connection is now CONNECTED")
 
   def __closing_procedure(self):
-    self.__status = 'CLOSING'
+    self.set_status('CLOSING')
     self.__send_FIN()
     while (self.__status != 'CLOSED'):
       time.sleep(0.1)
@@ -112,9 +110,9 @@ class Connection(object):
     if indice >= 0:
       self.ack_array[indice] = True
       if self.__status == 'OPENING' and CanalPlusHeader.FLAG['SYNACK'] == flag:
-        self.__status = 'OPEN'
+        self.set_status('OPEN')
       if self.__status == 'CLOSING' and CanalPlusHeader.FLAG['FINACK'] == flag:
-        self.__status = 'CLOSED'
+        self.set_status('CLOSED')
     return ack
     
   def link(self, seq, indice):
@@ -130,3 +128,33 @@ class Connection(object):
       print("message introuvable")
       indice = -1
     return indice
+    
+  def handle_incoming(self, header, received_msg):
+    flag = header.get_flag()
+    status = self.__status
+    if flag == CanalPlusHeader.FLAGS['data'] and status == 'CONNECTED':
+      self.__receiving_thread.add_message_to_dict(seq, message[128:])
+    elif flag == CanalPlusHeader.FLAGS['SYN'] and status == 'CLOSED':
+      ### TO DO HERE SET LISTENNING IP
+      status = 'CONNECTING'
+    elif flag == CanalPlusHeader.FLAGS['FIN'] and status == 'CONNECTED':
+      ### TO DO HERE SET LISTENNING IP
+      status = 'CLOSING'
+    elif flag == CanalPlusHeader.FLAGS['dataACK'] and status == 'CONNECTED':
+      pass
+    elif flag == CanalPlusHeader.FLAGS['SYNACK'] and status == 'CONNECTING':
+      status = 'CONNECTED'
+    elif flag == CanalPlusHeader.FLAGS['FINACK']:
+      pass
+    self.set_status(status)
+    ack = header.get_ack_number()
+    seq = header.get_sequence_number()
+    indice = self.look_for_msg(ack)
+    if indice >= 0:
+      self.ack_array[indice] = True
+    return seq
+    
+  def set_status(self, status):
+    print(status)
+    self.__status = status
+    

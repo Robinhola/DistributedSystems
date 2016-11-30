@@ -20,18 +20,18 @@ class ReceivingThread(threading.Thread):
       pass
       
   def run(self): # WIP
-    while True:
+    while self.connection.get_status() != 'FINISHED':
       self.receive()
-      for message in self.receiving_buffer:
+      while len(self.receiving_buffer) > 0:
         message = self.receiving_buffer.pop()
         header = CanalPlusHeader()
         header.turn_bytes_to_header(message)
-        seq = self.connection.validate_ack(header)
-        if seq > -1: 
+        seq = self.connection.handle_incoming(header, message)
+        if seq > 0: 
           if header.message_needs_ack():
             self.send_ack(header)
             if header.message_contains_data():
-              self.add_message_to_dict(seq, message[128:])
+              self.add_message_to_dict(seq, message[128:])    # CAREFUL SEQS
           else:
             data = self.pop_message_from_dict(seq)
             self.treat_data(data)
