@@ -2,7 +2,7 @@
 from CanalPlusHeader import *
 import time
 
-TIME_BEFORE_SENDING_AGAIN_ms = 40 #ms
+TIME_BEFORE_SENDING_AGAIN_ms = .40 # s
 
 class Message(object):
   """docstring for Message"""

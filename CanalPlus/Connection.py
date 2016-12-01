@@ -24,14 +24,11 @@ class Connection(object):
     self.__dict_seq_index = {}
     self.new_msg_event = threading.Event()
     self.data_received_event = threading.Event()
+    self.connection_event = threading.Event()
     self.__start_sending()
     self.__start_receiving()    
     self.ack_array = []
-
-  # unknown behavior
-  def __exit__(self, exc_type, exc_value, traceback):
-    # self.package_obj.cleanup()
-    pass
+    self.synack_number = 0
 
   def send(self, format, data):
     """
@@ -48,7 +45,6 @@ class Connection(object):
 
   def close(self):
     self.__closing_procedure() 
-    self.__exit__(None, None, None)
 
   def get_status(self):
     return self.status
@@ -74,14 +70,16 @@ class Connection(object):
     self.set_status('CONNECTING')
     self.__send_SYN()
     while (self.status != 'CONNECTED'):
-      time.sleep(0.1)                               # CAREFUL
+      self.connection_event.clear()
+      self.connection_event.wait()
     # print("Connection is now CONNECTED") # DEBUG
 
   def __closing_procedure(self):
     self.set_status('CLOSING')
     self.__send_FIN()
     while (self.status != 'CLOSED'):
-      time.sleep(0.1)
+      self.connection_event.clear()
+      self.connection_event.wait()
     # print("Connection is now CLOSED") # DEBUG
 
   def __send_SYN(self):
@@ -122,7 +120,7 @@ class Connection(object):
       self.__handle_msgACK(header)
     elif flag > 0:
       self.__handle_msg(header, received_msg)
-    else:
+    elif seq == self.synack_number:
       self.__handle_ACK(header)
     indice = self.__look_for_msg(seq)
     if indice >= 0:
@@ -131,6 +129,7 @@ class Connection(object):
     
   def set_status(self, status):
     # print('new Status:', status) # DEBUG
+    self.connection_event.set()                               # CAREFUL
     self.status = status
     
   def set_ip_address(self, ip):

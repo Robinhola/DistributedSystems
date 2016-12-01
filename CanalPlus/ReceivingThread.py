@@ -18,6 +18,7 @@ class ReceivingThread(threading.Thread):
       self.sock.bind((connection.get_ip_address(),
                     connection.get_source_port()))
     except:
+      print('''Could not bind the socket''')
       pass
       
   def run(self): # WIP
@@ -31,9 +32,11 @@ class ReceivingThread(threading.Thread):
         if seq > 0: 
           if header.message_needs_ack():
             self.connection.new_msg_event.set()
-            self.send_ack(header)
-            if header.message_contains_data():
+            if header.message_contains_data() and self.connection.get_status() == 'CONNECTED':
               self.add_message_to_dict(seq, message[128:])    # CAREFUL SEQS:
+              self.send_ack(header)
+            else:
+              self.send_ack(header)
           else:
             data = self.pop_message_from_dict(seq)
             self.treat_data(data)

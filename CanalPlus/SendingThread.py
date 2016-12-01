@@ -57,7 +57,7 @@ class SendingThread(threading.Thread):
       if message.time_since_last_try_not_short():
         self.try_to_send(message)
       elif len(self.sending_list) == 0:
-        time.sleep(TIME_BEFORE_SENDING_AGAIN_ms/1000)
+        time.sleep(TIME_BEFORE_SENDING_AGAIN_ms)
       self.append_to_sending_list(message)
     else:
       self.remove_message(message)
@@ -108,6 +108,8 @@ class SendingThread(threading.Thread):
 
   def pop_next_ack(self):
     ack_msg = self.ack_sending_list.pop(0)
+    if ack_msg.type == 'SYNACK':
+      self.connection.synack_number = ack_msg.header.get_sequence_number()
     return ack_msg
 
   def append_to_ack_list(self, ack_msg):
