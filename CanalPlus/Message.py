@@ -2,7 +2,7 @@
 from CanalPlusHeader import *
 import time
 
-TIME_BEFORE_SENDING_AGAIN_ms = 400 #ms
+TIME_BEFORE_SENDING_AGAIN_ms = 40 #ms
 
 class Message(object):
   """docstring for Message"""
@@ -14,7 +14,7 @@ class Message(object):
     self.__ack_status = False
     self.time_since_last_try = 0
     self.header = CanalPlusHeader(type)
-    self.content = ['', self.format_data(format, data)]
+    self.content = ['', self.__format_data(format, data)]
     self.wrapping(type, seq, ack, connection)
 
   def wrapping(self, type, seq, ack, connection):
@@ -25,7 +25,7 @@ class Message(object):
       self.header.set_destination_port(connection.get_destination_port())
     self.content[0] = self.header.turn_into_bytes()
 
-  def format_data(self, format, data):
+  def __format_data(self, format, data):
     b = bytes()
     if(not hasattr(data, '__iter__')):
         data = [data]
@@ -44,7 +44,7 @@ class Message(object):
 
   def time_since_last_try_not_short(self):
     diff = int(round(time.time() * 1000)) - self.time_since_last_try
-    return diff > TIME_BEFORE_SENDING_AGAIN_ms 
+    return diff > TIME_BEFORE_SENDING_AGAIN_ms
 
   def set_id(self, id):
     self.__id = id

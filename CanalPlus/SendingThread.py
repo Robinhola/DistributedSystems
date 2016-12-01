@@ -7,7 +7,8 @@ import socket
 
 RANGE = 4294967295
 
-TIME_BETWEEN_FIRST_SYN = 0.1 # ms
+TIME_BETWEEN_FIRST_SYN = 0.1 # s
+TIME_IF_CLOSED = 0.1 # s
 
 class SendingThread(threading.Thread):
 
@@ -38,7 +39,7 @@ class SendingThread(threading.Thread):
             self.connection.new_msg_event.clear() 
         else:
           time.sleep(TIME_BETWEEN_FIRST_SYN)
-      time.sleep(.500)
+      time.sleep(TIME_IF_CLOSED)
 
   def add(self, format, data, type = 'data'):
     message = self.create_message(format, data, type)
@@ -118,6 +119,7 @@ class SendingThread(threading.Thread):
     UDP_PORT = self.connection.get_destination_port()
     content += message.content[0] + message.content[1]
     message.time_since_last_try = int(round(time.time() * 1000))
+    # print(message.type)
     self.sock.sendto(content, (UDP_IP, UDP_PORT))
 
   def has_message_to_process(self):

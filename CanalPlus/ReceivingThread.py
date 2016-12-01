@@ -40,9 +40,10 @@ class ReceivingThread(threading.Thread):
 
   def read(self):
     data = bytes()
-    while(len(self.data) == 0):
-      time.sleep(0.3)
+    if(len(self.data) == 0):
+      self.connection.data_received_event.wait()
     data = self.data.pop(0)
+    self.connection.data_received_event.clear()
     return data
 
   def send_signal_buffer_full(self):
@@ -54,6 +55,7 @@ class ReceivingThread(threading.Thread):
       self.connection.set_ip_address(addr[0])
     header = CanalPlusHeader()
     header.turn_bytes_to_header(data)
+    # print("header flag:", header.get_flag()) # DEBUG
     self.receiving_buffer.append(data)
 
   def send_ack(self, header):
@@ -82,3 +84,4 @@ class ReceivingThread(threading.Thread):
   def treat_data(self, data):
     if len(data) > 0:
       self.data.append(data)
+      self.connection.data_received_event.set()

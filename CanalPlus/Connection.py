@@ -23,6 +23,7 @@ class Connection(object):
     self.__destination_port = destination_port
     self.__dict_seq_index = {}
     self.new_msg_event = threading.Event()
+    self.data_received_event = threading.Event()
     self.__start_sending()
     self.__start_receiving()    
     self.ack_array = []
@@ -139,7 +140,7 @@ class Connection(object):
   def __handle_msgACK(self, header):
     flag = header.get_flag()
     if flag == CanalPlusHeader.FLAGS['dataACK'] and self.status == 'CONNECTED':
-      # HERE INSERT TIMEOUT MANAGEMENT
+      # HERE RESTART TIMEOUT TIMER
       pass
     elif flag == CanalPlusHeader.FLAGS['SYNACK'] and self.status == 'CONNECTING':
       self.set_status('CONNECTED')
